@@ -1,0 +1,52 @@
+# Notes for AI coding agents
+
+You are helping someone use, change or report a problem with **tern-omp-usage**, a [Tern](https://stencil.so/tern) window plugin that draws Claude and Codex limits from `omp` in Tern's status line. Read this file before touching the code.
+
+## Map
+
+| File | What lives there |
+|---|---|
+| `plugin.toml` | Manifest. `id = "omp-usage"`; every command and CSS hook is prefixed `plugin.omp-usage.` |
+| `window.luau` | Entry point: finds `omp`, timers, the refresh command, the CSS, the status formatter, the optional `extras.luau` hook. |
+| `usage.luau` | Everything about usage: runs `omp`, parses its JSON, builds the segments, holds the labels. |
+| `tests/usage_test.luau` | Runs `usage.luau` against a fake `tern` with canned `omp` replies and checks the bar text. |
+| `scripts/check.py` | The gate. CI runs it; run it yourself before proposing a change. |
+
+## Rules that are easy to break
+
+- **The status formatter has 4 ms.** Tern disables a plugin that goes over. Never run a process, read a file or walk directories inside `tern.chrome.status`; do it in `tern.timer` or a `tern.process.run` callback and cache the result.
+- **Tern's CSS is a subset.** `text-shadow`, `margin-block` and friends are rejected (the check catches them). Style a segment by its title: `#statusline .sl-plugin[title="plugin.omp-usage.<command>"]`, which is why every segment carries a `command` even when it only refreshes.
+- **UTF-8.** Strings sent to Tern must stay valid UTF-8. Cut text by characters (`utf8.offset`), never by bytes.
+- **Anthropic rate-limits** its usage endpoint below about 5 minutes. Don't poll faster than `FETCH_MS`.
+- **Text the user sees** lives in `M.labels` in `usage.luau`. Don't hard-code new words elsewhere.
+- **No credentials, no network.** The plugin only runs `omp`. Keep it that way; anything that needs a token belongs in `omp`, not here.
+
+## What the user can configure
+
+`DAILY`, `TREND_STEP` and `M.labels` in `usage.luau`; `FETCH_MS` in `window.luau`; the `OMP_USAGE_BIN` environment variable for the `omp` path; personal segments in an untracked `extras.luau` (shape in the README). Point users there before suggesting a fork.
+
+## Before you propose a change
+
+```sh
+python scripts/check.py          # syntax, tests, CSS, manifest
+python scripts/check.py --tern   # also reloads the plugin in Tern and reads the log (when Tern is installed)
+```
+
+Both must end with `all checks passed`. Add a case to `tests/usage_test.luau` when you change what the bar shows.
+
+## When the user hits a bug
+
+Collect these and offer to open the issue for them. Show the text first, and only file it after they agree:
+
+1. `tern plugin list --json`, just the `omp-usage` entry.
+2. Lines with `omp-usage` from Tern's log (`%LOCALAPPDATA%\Tern\Logs\tern.log` on Windows).
+3. `omp --version`, and whether `omp usage --json -p anthropic` works in a terminal.
+4. What the bar shows against what they expected. A screenshot helps.
+
+**Remove emails, account ids, org names and tokens** from `omp usage --json` output before pasting it. That output contains them.
+
+```sh
+gh issue create --repo joaodutra88/tern-omp-usage --template bug_report.yml
+```
+
+If `gh` can't use the template non-interactively, pass `--title` and `--body` with the same sections as `.github/ISSUE_TEMPLATE/bug_report.yml`.

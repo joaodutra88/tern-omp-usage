@@ -1,0 +1,36 @@
+name: Bug report
+description: Something in the status line is wrong, missing or the plugin got disabled.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What the bar shows against what you expected. A screenshot of the status line helps.
+    validations:
+      required: true
+  - type: textarea
+    id: plugin
+    attributes:
+      label: Plugin state
+      description: The `omp-usage` entry from `tern plugin list --json`.
+      render: json
+  - type: textarea
+    id: log
+    attributes:
+      label: Tern log
+      description: Lines containing `omp-usage` from Tern's log (`%LOCALAPPDATA%\Tern\Logs\tern.log` on Windows).
+      render: text
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Tern version, `omp --version`, OS.
+    validations:
+      required: true
+  - type: textarea
+    id: omp
+    attributes:
+      label: omp output (optional)
+      description: "`omp usage --json -p anthropic` or `-p openai-codex`. Remove emails, account ids, org names and tokens first."
+      render: json

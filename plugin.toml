@@ -1,0 +1,7 @@
+schema = 1
+id = "omp-usage"
+name = "OMP usage"
+version = "0.3.0"
+description = "Claude and Codex limits from omp in the status line, with a work-week budget, saved resets and today's tokens and cost."
+icon = "gauge"
+window = "window.luau"

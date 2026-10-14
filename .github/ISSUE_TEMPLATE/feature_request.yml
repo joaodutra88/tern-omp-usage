@@ -1,0 +1,16 @@
+name: Idea or new provider
+description: A segment, a provider omp supports, a translation or a style change.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you'd like to see
+      description: Sketch how the bar would look, e.g. `⬢ Codex 5h ●●○○○ 40%`.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it helps
+      description: The question it answers while you work.
