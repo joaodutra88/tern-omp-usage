@@ -1,14 +1,21 @@
-**English** | [Português](README.pt-BR.md) | [Español](README.es.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+<div align="center">
 
-# tern-omp-usage
+<img src="assets/banner.png" width="760" alt="tern-omp-usage: Claude and Codex limits from omp, right in Tern's status line">
 
 [![check](https://github.com/joaodutra88/tern-omp-usage/actions/workflows/check.yml/badge.svg)](https://github.com/joaodutra88/tern-omp-usage/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/joaodutra88/tern-omp-usage?style=flat)](https://github.com/joaodutra88/tern-omp-usage/stargazers)
+[![Latest release](https://img.shields.io/github/v/release/joaodutra88/tern-omp-usage)](https://github.com/joaodutra88/tern-omp-usage/releases/latest)
 
 A [Tern](https://stencil.so/tern) status-line plugin for [omp](https://omp.sh) users. It keeps your Claude and Codex subscription limits, this week's spending budget and today's tokens and cost on screen, in one line, with no panel to open.
 
-![Claude and Codex usage in the Tern status line](assets/statusline.png)
+**[Install](#install)** · **[What each part means](#what-each-part-means)** · **[Configuration](#configuration)** · **[FAQ](#faq)** · **[Contributing](#contributing)**
+
+**English** | [Português](README.pt-BR.md) | [Español](README.es.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
+<img src="assets/statusline.png" alt="Claude and Codex usage in the Tern status line">
+
+</div>
 
 ## What it answers
 
@@ -37,23 +44,23 @@ These were rendered from canned `omp` replies, so you can see states that don't 
 
 **Quiet morning.** Everything green, plenty of budget.
 
-![calm](assets/state-calm.png)
+<p align="center"><img src="assets/state-calm.png" alt="calm"></p>
 
 **Usage climbing.** A `↑` appears when a window rose 3 points or more since the last reading, 5 minutes earlier.
 
-![rising](assets/state-rising.png)
+<p align="center"><img src="assets/state-rising.png" alt="rising"></p>
 
 **Hot 5h window.** At 86% the percentage becomes a red badge, and the reset turns green because relief is 21 minutes away.
 
-![hot](assets/state-hot.png)
+<p align="center"><img src="assets/state-hot.png" alt="hot"></p>
 
 **Ahead of the week.** 65% of the week used with only 40% unlocked: `over 25%` pulses until the next weekday catches up.
 
-![over budget](assets/state-over.png)
+<p align="center"><img src="assets/state-over.png" alt="over budget"></p>
 
 **Locked.** A window at 100% shows a pulsing badge with the time until it frees up and your saved resets.
 
-![locked](assets/state-locked.gif)
+<p align="center"><img src="assets/state-locked.gif" alt="locked"></p>
 
 ## Install
 
@@ -117,13 +124,33 @@ function M.segments(out, pane) end -- insert segments before the usage ones
 return M
 ```
 
+## FAQ
+
+**`tern plugin list` shows the plugin as `disabled`.**
+Tern disables a plugin that errors or whose status formatter runs over its time budget. Run `tern plugin reload`, then look for lines with `omp-usage` in Tern's log (`%LOCALAPPDATA%\Tern\Logs\tern.log` on Windows) and open an issue with them.
+
+**The bar shows `✻ Claude ?` or `⬢ Codex ?`.**
+The last `omp usage` call failed. Check that `omp usage --json -p anthropic` (or `-p openai-codex`) works in a terminal, and sign in with omp if it doesn't. Click any segment to retry.
+
+**Nothing shows up at all.**
+Make sure the status line is on (`"status_bar": true` in Tern's settings). If it is, Tern's daemon may not find `omp`: set `OMP_USAGE_BIN` to its full path and restart Tern.
+
+**The numbers lag behind claude.ai.**
+They come from the same usage endpoint through omp, every 5 minutes, because Anthropic rate-limits faster polling. Click a segment to force a fresh read.
+
+**Why is today's token count so high?**
+It includes cache reads, which make up most of an agent's input. The cost is what those tokens would cost at API prices, not what your subscription charges.
+
+**How do I uninstall it?**
+`tern plugin remove omp-usage`.
+
 ## Contributing
 
 This is open source under MIT: use it, fork it, change it, ship it. Issues and pull requests are open to everyone.
 
 - `python scripts/check.py` validates syntax, tests, CSS and the manifest. CI runs the same thing. Add `--tern` to also reload the plugin in your Tern and read its log.
 - Using an AI agent? Point it at [AGENTS.md](AGENTS.md). It explains the rules that are easy to break and how to file a clean bug report for you.
-- More in [CONTRIBUTING.md](CONTRIBUTING.md).
+- More in [CONTRIBUTING.md](CONTRIBUTING.md). Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md).
 
 ## Star history
 

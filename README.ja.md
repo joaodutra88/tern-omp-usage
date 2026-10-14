@@ -1,16 +1,23 @@
-[English](README.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [简体中文](README.zh-CN.md) | **日本語**
+<div align="center">
 
-> この日本語版は参考訳です。英語版 README.md が正であり、内容が異なる場合は英語版が優先されます。
-
-# tern-omp-usage
+<img src="assets/banner.png" width="760" alt="tern-omp-usage: omp 経由の Claude と Codex の上限を Tern のステータスラインに表示">
 
 [![check](https://github.com/joaodutra88/tern-omp-usage/actions/workflows/check.yml/badge.svg)](https://github.com/joaodutra88/tern-omp-usage/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/joaodutra88/tern-omp-usage?style=flat)](https://github.com/joaodutra88/tern-omp-usage/stargazers)
+[![Latest release](https://img.shields.io/github/v/release/joaodutra88/tern-omp-usage)](https://github.com/joaodutra88/tern-omp-usage/releases/latest)
 
 [omp](https://omp.sh) ユーザー向けの [Tern](https://stencil.so/tern) ステータスラインプラグインです。Claude と Codex のサブスクリプション上限、今週の支出予算、今日のトークン数とコストを、パネルを開かずに 1 行で画面に表示し続けます。
 
-![Tern ステータスラインの Claude と Codex の使用量](assets/statusline.png)
+**[インストール](#インストール)** · **[各表示の意味](#各表示の意味)** · **[設定](#設定)** · **[FAQ](#faq)** · **[コントリビュート](#コントリビュート)**
+
+[English](README.md) | [Português](README.pt-BR.md) | [Español](README.es.md) | [简体中文](README.zh-CN.md) | **日本語**
+
+> この日本語版は参考訳です。英語版 README.md が正であり、内容が異なる場合は英語版が優先されます。
+
+<img src="assets/statusline.png" alt="Tern ステータスラインの Claude と Codex の使用量">
+
+</div>
 
 ## わかること
 
@@ -39,23 +46,23 @@
 
 **静かな朝。** すべて緑で、予算も十分にあります。
 
-![calm](assets/state-calm.png)
+<p align="center"><img src="assets/state-calm.png" alt="calm"></p>
 
 **使用量の上昇。** ウィンドウが 5 分前の読み取りから 3 ポイント以上上がると `↑` が表示されます。
 
-![rising](assets/state-rising.png)
+<p align="center"><img src="assets/state-rising.png" alt="rising"></p>
 
 **5h ウィンドウが高止まり。** 86% になるとパーセンテージは赤いバッジになり、救済まで 21 分なのでリセット表示が緑になります。
 
-![hot](assets/state-hot.png)
+<p align="center"><img src="assets/state-hot.png" alt="hot"></p>
 
 **週のペースより先行。** 週の 65% を使ったのに解放済みは 40% だけです。`over 25%` は次の平日が追いつくまで点滅します。
 
-![over budget](assets/state-over.png)
+<p align="center"><img src="assets/state-over.png" alt="over budget"></p>
 
 **ロック中。** 100% のウィンドウは、解放までの時間と保存済みリセットを示す点滅バッジを表示します。
 
-![locked](assets/state-locked.gif)
+<p align="center"><img src="assets/state-locked.gif" alt="locked"></p>
 
 ## インストール
 
@@ -119,13 +126,33 @@ function M.segments(out, pane) end -- insert segments before the usage ones
 return M
 ```
 
+## FAQ
+
+**`tern plugin list` でプラグインが `disabled` と表示される。**
+Tern は、エラーを起こした、またはステータスフォーマッタが時間予算を超えたプラグインを無効にします。`tern plugin reload` を実行してから、Tern のログ(Windows では `%LOCALAPPDATA%\Tern\Logs\tern.log`)で `omp-usage` を含む行を探し、その行を添えて Issue を開いてください。
+
+**バーに `✻ Claude ?` または `⬢ Codex ?` と表示される。**
+直前の `omp usage` 呼び出しが失敗しています。ターミナルで `omp usage --json -p anthropic`(または `-p openai-codex`)が動作するか確認し、動作しなければ omp でサインインしてください。どのセグメントをクリックしても再試行されます。
+
+**何も表示されない。**
+ステータスラインがオンになっているか確認してください(Tern の設定で `"status_bar": true`)。オンなのに表示されない場合、Tern のデーモンが `omp` を見つけられていない可能性があります。`OMP_USAGE_BIN` にフルパスを設定し、Tern を再起動してください。
+
+**数値が claude.ai より遅れている。**
+同じ使用量エンドポイントから omp 経由で、5 分ごとに取得しているためです。Anthropic は頻繁なポーリングにレート制限をかけるため、この間隔にしています。セグメントをクリックすると、最新の値を強制的に読み取ります。
+
+**今日のトークン数がなぜこんなに多いのか?**
+エージェントの入力の大部分を占めるキャッシュ読み取りが含まれているためです。コストは、それらのトークンを API 価格で計算した金額であり、サブスクリプションの請求額ではありません。
+
+**アンインストールするには?**
+`tern plugin remove omp-usage` を実行してください。
+
 ## コントリビュート
 
 このプロジェクトは MIT ライセンスのオープンソースです。使う、フォークする、変更する、配布する、いずれも自由です。Issue とプルリクエストは誰に対しても開かれています。
 
 - `python scripts/check.py` は構文、テスト、CSS、マニフェストを検証します。CI も同じものを実行します。`--tern` を付けると、お使いの Tern でプラグインを再読み込みし、そのログも確認します。
 - AI エージェントを使っていますか? [AGENTS.md](AGENTS.md) を指定してください。間違えやすいルールと、適切なバグ報告の書き方を説明しています。
-- 詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
+- 詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。参加者は全員 [行動規範](CODE_OF_CONDUCT.md) に従います。セキュリティの問題は [SECURITY.md](SECURITY.md) から報告してください。
 
 ## スター履歴
 

@@ -1,16 +1,23 @@
-[English](README.md) | **Português** | [Español](README.es.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+<div align="center">
 
-O README em inglês é a referência e prevalece se houver diferença.
-
-# tern-omp-usage
+<img src="assets/banner.png" width="760" alt="tern-omp-usage: limites do Claude e do Codex pelo omp, direto na barra de status do Tern">
 
 [![check](https://github.com/joaodutra88/tern-omp-usage/actions/workflows/check.yml/badge.svg)](https://github.com/joaodutra88/tern-omp-usage/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/joaodutra88/tern-omp-usage?style=flat)](https://github.com/joaodutra88/tern-omp-usage/stargazers)
+[![Latest release](https://img.shields.io/github/v/release/joaodutra88/tern-omp-usage)](https://github.com/joaodutra88/tern-omp-usage/releases/latest)
 
 Um plugin de barra de status do [Tern](https://stencil.so/tern) para usuários do [omp](https://omp.sh). Ele mantém na tela, em uma única linha, os limites de assinatura do Claude e do Codex, o orçamento de gastos da semana e os tokens e o custo de hoje, sem nenhum painel para abrir.
 
-![Uso do Claude e do Codex na barra de status do Tern](assets/statusline.png)
+**[Instalação](#instalação)** · **[O que cada parte significa](#o-que-cada-parte-significa)** · **[Configuração](#configuração)** · **[FAQ](#faq)** · **[Contribuindo](#contribuindo)**
+
+[English](README.md) | **Português** | [Español](README.es.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
+O README em inglês é a referência e prevalece se houver diferença.
+
+<img src="assets/statusline.png" alt="Uso do Claude e do Codex na barra de status do Tern">
+
+</div>
 
 ## O que ele responde
 
@@ -39,23 +46,23 @@ Estes exemplos foram renderizados a partir de respostas fixas do `omp`, então v
 
 **Manhã tranquila.** Tudo verde, bastante orçamento.
 
-![calmo](assets/state-calm.png)
+<p align="center"><img src="assets/state-calm.png" alt="tranquilo"></p>
 
 **Uso subindo.** Um `↑` aparece quando uma janela subiu 3 pontos ou mais desde a última leitura, 5 minutos antes.
 
-![subindo](assets/state-rising.png)
+<p align="center"><img src="assets/state-rising.png" alt="subindo"></p>
 
 **Janela de 5h quente.** Em 86%, a porcentagem vira um selo vermelho, e o reset fica verde porque o alívio está a 21 minutos.
 
-![quente](assets/state-hot.png)
+<p align="center"><img src="assets/state-hot.png" alt="quente"></p>
 
 **À frente da semana.** 65% da semana usados com apenas 40% liberados: `over 25%` pulsa até o próximo dia útil alcançar.
 
-![acima do orçamento](assets/state-over.png)
+<p align="center"><img src="assets/state-over.png" alt="acima do orçamento"></p>
 
 **Bloqueado.** Uma janela em 100% mostra um selo pulsante com o tempo até ser liberada e os seus resets salvos.
 
-![bloqueado](assets/state-locked.gif)
+<p align="center"><img src="assets/state-locked.gif" alt="bloqueado"></p>
 
 ## Instalação
 
@@ -119,13 +126,33 @@ function M.segments(out, pane) end -- insert segments before the usage ones
 return M
 ```
 
+## FAQ
+
+**`tern plugin list` mostra o plugin como `disabled`.**
+O Tern desativa um plugin que dá erro ou cujo formatador da barra estoura o tempo previsto. Rode `tern plugin reload`, depois procure as linhas com `omp-usage` no log do Tern (`%LOCALAPPDATA%\Tern\Logs\tern.log` no Windows) e abra uma issue com elas.
+
+**A barra mostra `✻ Claude ?` ou `⬢ Codex ?`.**
+A última chamada de `omp usage` falhou. Confira se `omp usage --json -p anthropic` (ou `-p openai-codex`) funciona em um terminal e, se não funcionar, faça login no omp. Clique em qualquer segmento para tentar de novo.
+
+**Não aparece nada.**
+Confirme que a barra de status está ligada (`"status_bar": true` nas configurações do Tern). Se estiver, o daemon do Tern pode não encontrar o `omp`: defina `OMP_USAGE_BIN` com o caminho completo e reinicie o Tern.
+
+**Os números ficam atrás do claude.ai.**
+Eles vêm do mesmo endpoint de uso, pelo omp, a cada 5 minutos, porque a Anthropic limita a frequência de consultas. Clique em um segmento para forçar uma leitura nova.
+
+**Por que a contagem de tokens de hoje é tão alta?**
+Ela inclui as leituras de cache, que formam a maior parte da entrada de um agente. O custo é o que esses tokens custariam ao preço da API, não o que a sua assinatura cobra.
+
+**Como desinstalo?**
+`tern plugin remove omp-usage`.
+
 ## Contribuindo
 
 Este projeto é open source sob MIT: use, faça fork, altere, publique. Issues e pull requests são abertos a todos.
 
 - `python scripts/check.py` valida sintaxe, testes, CSS e o manifesto. O CI executa a mesma coisa. Adicione `--tern` para também recarregar o plugin no seu Tern e ler o log dele.
 - Usando um agente de IA? Aponte para [AGENTS.md](AGENTS.md). Ele explica as regras que são fáceis de quebrar e como abrir um relatório de bug limpo para você.
-- Mais em [CONTRIBUTING.md](CONTRIBUTING.md).
+- Mais em [CONTRIBUTING.md](CONTRIBUTING.md). Todos que participam seguem o [Código de Conduta](CODE_OF_CONDUCT.md); problemas de segurança passam pelo [SECURITY.md](SECURITY.md).
 
 ## Histórico de estrelas
 
