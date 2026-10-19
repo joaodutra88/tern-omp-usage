@@ -156,11 +156,15 @@ local function animate()
 	tern.timer(90, step)
 end
 
+-- tern.process.run raises synchronously when the binary is missing; treat that as a failed fetch.
 local function run_json(argv: { string }, done: (any?) -> ())
-	tern.process.run(argv, { timeout_ms = 60000 }, function(res)
+	local started = pcall(tern.process.run, argv, { timeout_ms = 60000 }, function(res)
 		local ok, data = pcall(tern.json.decode, res.stdout)
 		done(if res.status == 0 and ok then data else nil)
 	end)
+	if not started then
+		done(nil)
+	end
 end
 
 function M.fetch(invalidate: boolean?)
@@ -199,9 +203,7 @@ function M.fetch(invalidate: boolean?)
 			finish()
 		end)
 	end
-	if invalidate then
-		tern.process.run({ OMP, "usage", "invalidate" }, { timeout_ms = 30000 }, go)
-	else
+	if not (invalidate and pcall(tern.process.run, { OMP, "usage", "invalidate" }, { timeout_ms = 30000 }, go)) then
 		go()
 	end
 end

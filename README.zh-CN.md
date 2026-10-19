@@ -70,7 +70,7 @@
 tern plugin install https://github.com/joaodutra88/tern-omp-usage
 ```
 
-你需要在 `omp` 中登录 Anthropic 和/或 OpenAI Codex，以便 `omp usage` 能在终端中正常运行。插件使用 Tern 管理的 omp（`%LOCALAPPDATA%\Tern\omp\bin\omp.exe`），如果找不到，则回退到 `PATH` 中的 `omp`。如果 Tern 的守护进程找不到它，请将 `OMP_USAGE_BIN` 设置为完整路径。
+你需要在 `omp` 中登录 Anthropic 和/或 OpenAI Codex，以便 `omp usage` 能在终端中正常运行。插件使用 Tern 管理的 omp（Windows 上为 `%LOCALAPPDATA%\Tern\omp\bin\omp.exe`，macOS 上为 `~/Library/Application Support/Tern/omp/bin/omp`），如果找不到，则回退到 `PATH` 中的 `omp`。如果 Tern 的守护进程找不到它，请将 `OMP_USAGE_BIN` 设置为完整路径。
 
 ### 使用 AI 代理安装
 

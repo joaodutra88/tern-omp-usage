@@ -70,7 +70,7 @@ Estes exemplos foram renderizados a partir de respostas fixas do `omp`, então v
 tern plugin install https://github.com/joaodutra88/tern-omp-usage
 ```
 
-Você precisa do `omp` logado na Anthropic e/ou no OpenAI Codex, de forma que `omp usage` funcione em um terminal. O plugin usa o omp que o Tern gerencia (`%LOCALAPPDATA%\Tern\omp\bin\omp.exe`) e recorre ao `omp` no `PATH`. Se o daemon do Tern não encontrar o executável, defina `OMP_USAGE_BIN` com o caminho completo.
+Você precisa do `omp` logado na Anthropic e/ou no OpenAI Codex, de forma que `omp usage` funcione em um terminal. O plugin usa o omp que o Tern gerencia (`%LOCALAPPDATA%\Tern\omp\bin\omp.exe` no Windows, `~/Library/Application Support/Tern/omp/bin/omp` no macOS) e recorre ao `omp` no `PATH`. Se o daemon do Tern não encontrar o executável, defina `OMP_USAGE_BIN` com o caminho completo.
 
 ### Instalar com o seu agente de IA
 
