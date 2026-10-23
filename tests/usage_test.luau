@@ -66,9 +66,9 @@ local codex = {
 	},
 }
 
-local function render(claude_reply): (string, { [string]: boolean })
+local function render(claude_reply, codex_reply: any?): (string, { [string]: boolean })
 	replies["usage --json -p anthropic"] = claude_reply
-	replies["usage --json -p openai-codex"] = codex
+	replies["usage --json -p openai-codex"] = codex_reply or codex
 	replies["stats --json"] = { timeSeries = { { timestamp = now_ms, tokens = 1500000, cost = 12.4 } } }
 	usage.fetch()
 	usage.fetch_today()
@@ -131,6 +131,12 @@ expect(cmd["plugin.omp-usage.slack-bad"] == true, "over budget uses the red styl
 expect(text:find("CLAUDE LOCKED", 1, true) ~= nil, "lockout badge missing at 100%", text)
 expect(text:find("Fable", 1, true) ~= nil, "Fable shows when the plan has it", text)
 expect(cmd["plugin.omp-usage.pct-crit"] == true, "100% uses the critical style", text)
+
+-- Signed in to Claude only: omp answers Codex with no reports, which hides the group rather than flagging an error.
+text = render(claude(0.4, 0, now_ms + 7 * DAY), { reports = {}, capacity = {} })
+expect(text:find("Codex", 1, true) == nil, "Codex should hide when omp has no Codex account", text)
+expect(text:find("⚠", 1, true) == nil, "a provider without an account is not an error", text)
+expect(text:find("✻ Claude", 1, true) ~= nil, "Claude stays when only Codex has no account", text)
 
 -- Labels are the translation point.
 usage.labels.left = "sobra"
