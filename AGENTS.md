@@ -43,7 +43,7 @@ python scripts/check.py --integration  # the whole plugin in a fake Tern (budget
 python scripts/check.py --tern         # also reloads the plugin in Tern and reads the log (when Tern is installed)
 ```
 
-All must end with `all checks passed`. Add a case to `tests/usage_test.luau` when you change what the bar shows, and a scenario to `tests/integration/plugin_test.luau` when a change crosses modules, timers or the update. Fixtures come from real `omp` output: record with `--redact`, then replace every e-mail, account id and org name with fakes.
+All must end with `all checks passed`. Add a case to `tests/usage_test.luau` when you change what the bar shows, and a scenario to `tests/integration/plugin_test.luau` when a change crosses modules, timers or the update. Fixtures come from real `omp` output: record with `--redact`, then replace every e-mail, account id and org name with fakes. `check.py` fails on any e-mail in `tests/` that isn't `@example.com`; ids and org names are on you.
 
 ## When the user hits a bug
 
