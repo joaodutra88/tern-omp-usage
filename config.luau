@@ -13,6 +13,7 @@ M.PARTS = {
 	reset = true,
 	credits = true,
 	fable = true,
+	updates = true,
 }
 M.LANGUAGES = { "en", "pt-BR", "es", "zh-CN", "ja" }
 

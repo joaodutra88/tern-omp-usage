@@ -19,7 +19,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN_ID = "omp-usage"
-LUAU_FILES = ["window.luau", "usage.luau", "config.luau", "labels.luau", "tests/usage_test.luau"]
+LUAU_FILES = ["window.luau", "usage.luau", "config.luau", "labels.luau", "update.luau"]
+TESTS = sorted(str(p.relative_to(ROOT).as_posix()) for p in (ROOT / "tests").glob("*_test.luau"))
 # Tern's CSS engine rejects these and logs a style sheet error.
 BAD_CSS = ["text-shadow", "margin-block", "margin-inline", "padding-block", "padding-inline"]
 
@@ -80,10 +81,11 @@ def check_luau() -> None:
     if not compile_bin or not luau_bin:
         step("Luau CLI found (luau, luau-compile)", False, "install it or set LUAU_DIR; see the top of this file")
         return
-    res = run([compile_bin, "--null", *LUAU_FILES])
+    res = run([compile_bin, "--null", *LUAU_FILES, *TESTS])
     step("Luau syntax (luau-compile --null)", res.returncode == 0, (res.stderr or res.stdout).strip())
-    res = run([luau_bin, "tests/usage_test.luau"])
-    step("tests/usage_test.luau", res.returncode == 0, (res.stderr or res.stdout).strip())
+    for test in TESTS:
+        res = run([luau_bin, test])
+        step(test, res.returncode == 0, (res.stderr or res.stdout).strip())
 
 
 def tern_log() -> Path | None:
