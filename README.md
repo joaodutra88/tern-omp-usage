@@ -70,6 +70,12 @@ tern plugin install https://github.com/joaodutra88/tern-omp-usage
 
 You need `omp` signed in to Anthropic and/or OpenAI Codex, so `omp usage` works in a terminal. The plugin uses the omp that Tern manages (`%LOCALAPPDATA%\Tern\omp\bin\omp.exe` on Windows, `~/Library/Application Support/Tern/omp/bin/omp` on macOS) and falls back to `omp` on `PATH`. If Tern's daemon can't find it, set `OMP_USAGE_BIN` to the full path.
 
+### Updates
+
+Once a day the plugin checks GitHub for a newer release. When there is one, a blue `⬆ 0.5.0` appears at the start of its segments and a toast tells you once. Click it, or run **OMP usage: update to the latest version**, and the plugin reinstalls itself from this repository (`tern plugin install … --force`). Your settings and your `extras.luau` carry over. After the update a toast names the new version, and **OMP usage: what's new** opens its release notes.
+
+A linked checkout (`tern plugin link`) updates with `git pull` instead. To stop checking, hide the `updates` part (see [Configuration](#configuration)) or set `OMP_USAGE_NO_UPDATE_CHECK=1`.
+
 ### Install with your AI agent
 
 Paste this into omp, Claude Code, Codex or any agent that can run commands:
@@ -86,7 +92,7 @@ Install the Tern plugin https://github.com/joaodutra88/tern-omp-usage for me.
 
 ## What it runs and what it touches
 
-The plugin makes no network requests and reads no credentials. It only runs omp:
+The plugin reads no credentials. It runs omp, and makes one network request of its own:
 
 | Command | When |
 |---|---|
@@ -94,8 +100,10 @@ The plugin makes no network requests and reads no credentials. It only runs omp:
 | `omp usage --json -p openai-codex` | Every 5 min |
 | `omp stats --json` | Every 5 min |
 | `omp usage invalidate` | When you click a segment, to skip omp's cache |
+| `GET api.github.com/repos/joaodutra88/tern-omp-usage/releases/latest` | Once a day per machine, no token; off with the `updates` part or `OMP_USAGE_NO_UPDATE_CHECK=1` |
+| `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force` | Only when you click `⬆` or run the update command |
 
-Settings go to the plugin's data folder (`tern.kv`), nowhere else. The status formatter only reads values cached by those calls, because Tern gives a formatter 4 ms.
+Settings, the last release seen and a copy of your `extras.luau` (made before an update) go to the plugin's data folder (`tern.kv`), nowhere else. The status formatter only reads values cached by those calls, because Tern gives a formatter 4 ms.
 
 ## Configuration
 
@@ -103,11 +111,13 @@ Open the command palette and type `OMP usage`. Settings are kept in the plugin's
 
 | Command | Does |
 |---|---|
-| **OMP usage: show or hide a part…** | Type a part to turn it on or off: `claude`, `codex`, `today`, `cost`, `budget`, `reset`, `credits`, `fable`. |
+| **OMP usage: show or hide a part…** | Type a part to turn it on or off: `claude`, `codex`, `today`, `cost`, `budget`, `reset`, `credits`, `fable`, `updates`. |
 | **OMP usage: language…** | `en`, `pt-BR`, `es`, `zh-CN` or `ja`. |
 | **OMP usage: work days per week…** | How many days, counted from Monday, unlock the weekly quota. The default `5` means Monday to Friday, 20% each. |
 | **OMP usage: red badge threshold…** | The percentage where a window becomes the pulsing red badge (default 80). |
 | **OMP usage: reset settings** | Back to the defaults. |
+| **OMP usage: check for updates** | Asks GitHub now, even with `updates` hidden. |
+| **OMP usage: what's new** | Opens the release notes of the version you run. |
 
 If Tern's daemon can't find `omp`, set the `OMP_USAGE_BIN` environment variable to its full path. Colors are plain CSS at the bottom of `window.luau`. Each segment is `#statusline .sl-plugin[title="plugin.omp-usage.<name>"]`.
 
@@ -117,7 +127,7 @@ Every word the plugin shows lives in `labels.luau`, one table per language. To a
 
 ### Your own segments
 
-If an `extras.luau` file sits next to `window.luau`, the plugin loads it. Git ignores it, so personal segments never reach the repository:
+If an `extras.luau` file sits next to `window.luau`, the plugin loads it. Git ignores it, so personal segments never reach the repository. An update copies it to the plugin's data folder first, and the plugin loads that copy when the one beside `window.luau` is gone:
 
 ```luau
 local M = {}
@@ -142,6 +152,9 @@ They come from the same usage endpoint through omp, every 5 minutes, because Ant
 
 **Why is today's token count so high?**
 It includes cache reads, which make up most of an agent's input. The cost is what those tokens would cost at API prices, not what your subscription charges.
+
+**How do I update?**
+Click the blue `⬆` when it shows, or run **OMP usage: update to the latest version**. By hand: `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`. Versions before 0.4.0 have no update check, so update those once by hand.
 
 **How do I uninstall it?**
 `tern plugin remove omp-usage`.

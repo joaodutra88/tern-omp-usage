@@ -11,7 +11,8 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 | `usage.luau` | Everything about usage: runs `omp`, parses its JSON, builds the segments. |
 | `config.luau` | Settings in `tern.kv` (parts shown, language, work days, red-badge threshold) and the palette commands that change them. |
 | `labels.luau` | Every word the plugin shows, one table per language. |
-| `tests/usage_test.luau` | Runs `usage.luau` and `config.luau` against a fake `tern` with canned `omp` replies and checks the bar text. |
+| `update.luau` | Daily GitHub release check, the `⬆` segment and its toast, the one-click reinstall, the toast after an update. |
+| `tests/*_test.luau` | Run the modules against a fake `tern` (canned `omp` replies, a canned GitHub answer) and check what the bar and the toasts say. |
 | `scripts/check.py` | The gate. CI runs it; run it yourself before proposing a change. |
 
 ## Rules that are easy to break
@@ -22,11 +23,12 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 - **Anthropic rate-limits** its usage endpoint below about 5 minutes. Don't poll faster than `FETCH_MS`.
 - **Text the user sees** lives in `labels.luau`. Add a key to `en` (and the other languages you can) instead of hard-coding words elsewhere.
 - **Settings are read outside the formatter.** `config.load()` reads `tern.kv` at load and on the minute tick; the formatter only reads the cached table.
-- **No credentials, no network.** The plugin only runs `omp`. Keep it that way; anything that needs a token belongs in `omp`, not here.
+- **No credentials, one request.** The plugin runs `omp`, plus a daily unauthenticated GET of this repository's latest GitHub release (off with the `updates` part or `OMP_USAGE_NO_UPDATE_CHECK`). Don't add more network calls; anything that needs a token belongs in `omp`, not here.
+- **Write only to `tern.plugin.data`.** An install replaces the package folder, and a write inside it reloads the plugin.
 
 ## What the user can configure
 
-The palette: `OMP usage: show or hide a part…`, `language…`, `work days per week…`, `red badge threshold…`, `reset settings` (stored in `tern.kv`, kept across updates). The `OMP_USAGE_BIN` environment variable for the `omp` path; personal segments in an untracked `extras.luau` (shape in the README). Point users there before suggesting a fork.
+The palette: `OMP usage: show or hide a part…`, `language…`, `work days per week…`, `red badge threshold…`, `reset settings`, `check for updates`, `update to the latest version`, `what's new` (settings in `tern.kv`, kept across updates). The `OMP_USAGE_BIN` environment variable for the `omp` path and `OMP_USAGE_NO_UPDATE_CHECK=1` to stop the release check; personal segments in an untracked `extras.luau` (shape in the README). Point users there before suggesting a fork.
 
 ## Before you propose a change
 
