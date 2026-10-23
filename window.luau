@@ -61,17 +61,15 @@ config.load()
 config.commands()
 update.init()
 
--- window_start doesn't fire again after `tern plugin reload`; a load-time timer covers both.
-tern.timer(0, function(cx)
+-- window_start doesn't fire again after `tern plugin reload`; a load-time timer covers both. Each callback starts
+-- one process or request at most: one over 50 ms makes Tern turn off every timer of the plugin until a reload.
+tern.timer(0, function()
 	every(FETCH_MS, usage.fetch)
+end)
+tern.timer(1000, function()
 	every(FETCH_MS, usage.fetch_today)
-	tern.timer(TICK_MS, function()
-		-- The countdown moves without new data, and another window may have changed a setting.
-		every(TICK_MS, function()
-			config.load()
-			tern.chrome.refresh()
-		end)
-	end)
+end)
+tern.timer(2000, function(cx)
 	if cx then
 		update.greet(cx)
 	end
@@ -80,6 +78,13 @@ tern.timer(0, function(cx)
 		tern.timer(UPDATE_MS, look)
 	end
 	look(cx)
+end)
+tern.timer(TICK_MS, function()
+	-- The countdown moves without new data, and another window may have changed a setting.
+	every(TICK_MS, function()
+		config.load()
+		tern.chrome.refresh()
+	end)
 end)
 
 tern.css("statusline", [[

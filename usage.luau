@@ -195,13 +195,23 @@ function M.fetch(invalidate: boolean?)
 	end
 	busy = true
 	tern.chrome.refresh()
-	local pending = 2
-	local function finish()
-		pending -= 1
-		if pending == 0 then
+	-- Codex starts once Claude answers, so no callback starts two processes: Tern turns off every timer of a
+	-- plugin whose timer callback runs over 50 ms, and on Windows starting a process takes a good part of that.
+	local function fetch_codex()
+		run_json({ OMP, "usage", "--json", "-p", "openai-codex" }, function(data, cx)
+			failed.codex = data == nil
+			if data then
+				codex = parse_codex(data)
+				if codex then
+					track("x5", codex.five)
+					track("xwk", codex.week)
+					alert(cx, "x5", "Codex", "5h", codex.five, codex.five_reset)
+					alert(cx, "xwk", "Codex", "wk", codex.week, codex.week_reset)
+				end
+			end
 			busy = false
 			animate()
-		end
+		end)
 	end
 	local function go()
 		-- nil data means omp failed; an answer with no account for the provider hides its group instead.
@@ -217,20 +227,7 @@ function M.fetch(invalidate: boolean?)
 					alert(cx, "cf", "Claude", "Fable", claude.fable, claude.fable_reset)
 				end
 			end
-			finish()
-		end)
-		run_json({ OMP, "usage", "--json", "-p", "openai-codex" }, function(data, cx)
-			failed.codex = data == nil
-			if data then
-				codex = parse_codex(data)
-				if codex then
-					track("x5", codex.five)
-					track("xwk", codex.week)
-					alert(cx, "x5", "Codex", "5h", codex.five, codex.five_reset)
-					alert(cx, "xwk", "Codex", "wk", codex.week, codex.week_reset)
-				end
-			end
-			finish()
+			fetch_codex()
 		end)
 	end
 	if not (invalidate and pcall(tern.process.run, { OMP, "usage", "invalidate" }, { timeout_ms = 30000 }, go)) then

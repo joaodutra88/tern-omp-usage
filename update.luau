@@ -128,7 +128,9 @@ function M.install(cx: any)
 	keep_extras()
 	cx:toast("info", config.labels.updating)
 	local argv = { tern_bin(), "plugin", "install", SOURCE, "--force" }
-	local started = pcall(tern.process.run, argv, { timeout_ms = 120000 }, function(res, later)
+	-- The default cwd is this plugin's folder, and Windows can't replace a folder a process is running in.
+	local opts = { timeout_ms = 120000, cwd = tern.plugin.data }
+	local started = pcall(tern.process.run, argv, opts, function(res, later)
 		installing = false
 		if res.status == 0 then
 			return -- the install reloads the plugin; the new version says so when it loads
