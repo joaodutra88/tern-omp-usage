@@ -7,7 +7,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/joaodutra88/tern-omp-usage?style=flat)](https://github.com/joaodutra88/tern-omp-usage/stargazers)
 [![Latest release](https://img.shields.io/github/v/release/joaodutra88/tern-omp-usage)](https://github.com/joaodutra88/tern-omp-usage/releases/latest)
 
-A [Tern](https://stencil.so/tern) status-line plugin for [omp](https://omp.sh) users. It keeps your Claude and Codex subscription limits, this week's spending budget and today's tokens and cost on screen, in one line, with no panel to open.
+A [Tern](https://stencil.so/tern) status-line plugin for [omp](https://omp.sh) users. It keeps your Claude and Codex subscription limits, this week's spending budget and today's tokens and cost on screen, in one line. Click today's cost for a dashboard of the last 7 days.
 
 **[Install](#install)** · **[What each part means](#what-each-part-means)** · **[Configuration](#configuration)** · **[FAQ](#faq)** · **[Contributing](#contributing)**
 
@@ -22,7 +22,7 @@ A [Tern](https://stencil.so/tern) status-line plugin for [omp](https://omp.sh) u
 Everything stays in the status line, so the answers are on screen while you work:
 
 - **Can I afford a heavy run today?** A work-week budget: each weekday unlocks 20% of the weekly quota, and a holiday's share carries over.
-- **What did today cost?** Tokens and API-price cost since midnight, across every provider omp tracks.
+- **What did today cost?** Tokens and API-price cost since midnight, across every provider omp tracks. The dashboard adds the last 7 days and this month.
 - **Do I have a reset saved?** Saved usage-limit resets for Claude and Codex.
 - **When do I run out?** At the current pace, how long until the 5h or weekly window locks, when that comes before its reset. A toast when a window hits 80%, locks or frees up again.
 - **Claude and Codex side by side**, both read through omp, with nothing new to sign in to.
@@ -37,8 +37,14 @@ Everything stays in the status line, so the answers are on screen while you work
 | <img src="assets/seg-credits.png" height="28" alt="saved resets"> | Usage-limit resets you have saved. |
 | <img src="assets/seg-budget.png" height="28" alt="work-week budget"> | Work-week budget. Each work day (Monday to Friday unless you change it) of the current 7-day window unlocks an equal share of the weekly quota, 20% with five days. `left` is quota unlocked and not spent yet. `over` (pulsing red) means you are spending ahead of the week. |
 | <img src="assets/seg-codex.png" height="28" alt="Codex"> | Codex. `×2` is the number of linked accounts, and the windows show the share of accounts used up. |
-| <img src="assets/seg-today.png" height="28" alt="today's tokens and cost"> | Tokens and API-price cost since local midnight, all providers, from `omp stats`. Cache reads count as tokens, so most of this number is cache. |
-| <img src="assets/seg-refresh.png" height="28" alt="refresh"> | Refresh now. Clicking any usage segment does the same. |
+| <img src="assets/seg-today.png" height="28" alt="today's tokens and cost"> | Tokens and API-price cost since local midnight, all providers, from `omp stats`. Cache reads count as tokens, so most of this number is cache. Click it to open the dashboard. |
+| <img src="assets/seg-refresh.png" height="28" alt="refresh"> | Refresh now. Clicking any other usage segment does the same. |
+
+### Dashboard
+
+**OMP usage: dashboard** (or a click on today's tokens or cost) opens a pane beside the one you are in. It shows Claude and Codex 5h and weekly usage hour by hour over the last 7 days, from `omp usage --history`, and the API-price cost of today, the last 7 days and this month, with a bar per day. Press `r` to read the history again.
+
+`omp stats` only goes back about a day, so the plugin keeps each day's total itself. The week and the month fill in from the day you install 0.4.0.
 
 ## How it looks as the week goes
 
@@ -101,11 +107,12 @@ The plugin reads no credentials. It runs omp, and makes one network request of i
 | `omp usage --json -p anthropic` | Every 5 min. Anthropic's usage endpoint answers 429 below about 5 min. |
 | `omp usage --json -p openai-codex` | Every 5 min |
 | `omp stats --json` | Every 5 min |
+| `omp usage --history --json --days 7` | When the dashboard opens, and when you press `r` in it |
 | `omp usage invalidate` | When you click a segment, to skip omp's cache |
 | `GET api.github.com/repos/joaodutra88/tern-omp-usage/releases/latest` | Once a day per machine, no token; off with the `updates` part or `OMP_USAGE_NO_UPDATE_CHECK=1` |
 | `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force` | Only when you click `⬆` or run the update command |
 
-Settings, the last release seen and a copy of your `extras.luau` (made before an update) go to the plugin's data folder (`tern.kv`), nowhere else. The status formatter only reads values cached by those calls, because Tern gives a formatter 4 ms.
+Settings, each day's tokens and cost (for the dashboard), the last release seen and a copy of your `extras.luau` (made before an update) go to the plugin's data folder (`tern.kv`), nowhere else. The status formatter only reads values cached by those calls, because Tern gives a formatter 4 ms.
 
 ## Configuration
 
@@ -119,6 +126,7 @@ Open the command palette and type `OMP usage`. Settings are kept in the plugin's
 | **OMP usage: red badge threshold…** | The percentage where a window becomes the pulsing red badge (default 80). |
 | **OMP usage: reset settings** | Back to the defaults. |
 | **OMP usage: check for updates** | Asks GitHub now, even with `updates` hidden. |
+| **OMP usage: dashboard** | Opens the dashboard, or focuses it when this window already has one. |
 | **OMP usage: what's new** | Opens the release notes of the version you run. |
 
 If Tern's daemon can't find `omp`, set the `OMP_USAGE_BIN` environment variable to its full path. Colors are plain CSS at the bottom of `window.luau`. Each segment is `#statusline .sl-plugin[title="plugin.omp-usage.<name>"]`.

@@ -6,27 +6,7 @@ local FETCH_MS = 5 * 60 * 1000 -- Anthropic usage endpoint answers 429 below ~5 
 local TICK_MS = 60 * 1000
 local UPDATE_MS = 60 * 60 * 1000 -- update.check asks GitHub at most once a day; this only looks at the cache
 
--- Tern's app may not inherit the shell PATH, so prefer the omp that Tern itself manages.
-local function managed_omp(): string?
-	local paths: { string } = {}
-	local local_app = tern.getenv("LOCALAPPDATA")
-	if local_app then
-		table.insert(paths, local_app .. "\\Tern\\omp\\bin\\omp.exe")
-	end
-	local home = tern.getenv("HOME")
-	if home then
-		table.insert(paths, home .. "/Library/Application Support/Tern/omp/bin/omp")
-		table.insert(paths, (tern.getenv("XDG_DATA_HOME") or home .. "/.local/share") .. "/Tern/omp/bin/omp")
-	end
-	for _, p in paths do
-		if tern.fs.exists(p) then
-			return p
-		end
-	end
-	return nil
-end
-
-local OMP = tern.getenv("OMP_USAGE_BIN") or managed_omp() or "omp"
+local OMP = config.omp_bin()
 
 local function every(ms: number, fn: () -> ())
 	local function loop()
@@ -36,7 +16,7 @@ local function every(ms: number, fn: () -> ())
 	loop()
 end
 
-local function hidden(id: string, run: () -> ())
+local function hidden(id: string, run: (any) -> ())
 	tern.command({
 		id = id,
 		title = "Status line: " .. id,
@@ -54,6 +34,28 @@ tern.command({
 		usage.fetch(true)
 	end,
 })
+
+-- One dashboard per window: focus the open one, else open it beside the focused pane.
+local function open_dashboard(cx: WindowCx)
+	for _, pane in cx.session:panes() do
+		if pane.title == "OMP usage" then
+			cx.layout:focus(pane.pane)
+			return
+		end
+	end
+	if cx:new_block("omp-usage.dashboard", nil, "beside") == nil then
+		cx:toast("error", config.labels.dash_missing)
+	end
+end
+
+tern.command({
+	id = "dashboard",
+	title = "OMP usage: dashboard",
+	icon = "gauge",
+	run = open_dashboard,
+})
+hidden("today", open_dashboard)
+hidden("cost", open_dashboard)
 usage.init(OMP, hidden)
 config.load()
 config.commands()

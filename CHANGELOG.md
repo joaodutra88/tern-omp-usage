@@ -10,6 +10,7 @@ Every version `plugin.toml` names has a section here. When that version reaches 
 - Update notice: once a day the plugin looks at the latest GitHub release. A newer one shows a blue `⬆` badge and one toast; clicking it reinstalls the plugin (`tern plugin install … --force`), keeping your settings and `extras.luau`. After the update a toast names the new version, and **OMP usage: what's new** opens its notes. Hide the `updates` part or set `OMP_USAGE_NO_UPDATE_CHECK=1` to stop checking.
 - Alerts: a toast when a Claude or Codex window reaches the red-badge threshold, locks, or frees up again. The first reading after a reload only sets the baseline, so a reload never repeats an alert.
 - Forecast: `⏳23m` after the Claude 5h or `wk` bar when, at the average pace since that window opened, it runs out before it resets. It shows from 50% used.
+- Dashboard: **OMP usage: dashboard**, or a click on today's tokens or cost, opens a pane with Claude and Codex 5h and weekly usage hour by hour over the last 7 days, and the cost of today, the last 7 days and this month. The plugin now keeps each day's total in `tern.kv`, because `omp stats` only goes back about a day.
 
 ## 0.3.1
 

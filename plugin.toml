@@ -4,4 +4,9 @@ name = "OMP usage"
 version = "0.3.1"
 description = "Claude and Codex limits from omp in the status line, with a work-week budget, saved resets and today's tokens and cost."
 icon = "gauge"
+host = "host.luau"
 window = "window.luau"
+
+[[blocks]]
+id = "dashboard"
+title = "OMP usage"

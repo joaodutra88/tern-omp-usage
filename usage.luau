@@ -243,6 +243,25 @@ local function midnight_ms(): number
 	return os.time({ year = t.year, month = t.month, day = t.day, hour = 0, min = 0, sec = 0 }) * 1000
 end
 
+-- Keeps each day's total in tern.kv for the dashboard's week and month: `omp stats` only goes back about a day.
+local function record_day(tokens: number, cost: number)
+	local key = os.date("%Y-%m-%d") :: string
+	local ok, days = pcall(tern.kv.get, "days")
+	days = if ok and type(days) == "table" then days else {}
+	local d = days[key]
+	if type(d) == "table" and d.tokens == tokens and d.cost == cost then
+		return
+	end
+	days[key] = { tokens = tokens, cost = cost }
+	local oldest = os.date("%Y-%m-%d", os.time() - 62 * 86400) :: string
+	for k in days do
+		if k < oldest then
+			days[k] = nil
+		end
+	end
+	tern.kv.set("days", days)
+end
+
 -- Tokens and API-price cost since local midnight, every provider, from `omp stats` hourly buckets.
 function M.fetch_today()
 	run_json({ OMP, "stats", "--json" }, function(data)
@@ -258,6 +277,7 @@ function M.fetch_today()
 			end
 		end
 		today = { tokens = tokens, cost = cost }
+		record_day(tokens, cost)
 		tern.chrome.refresh()
 	end)
 end
@@ -363,9 +383,10 @@ function M.segments(out: { any })
 	table.insert(out, if busy then { text = "⟳ …", tone = "muted" } else { text = "⟳", tone = "accent", command = P .. "refresh" })
 end
 
+-- Clicking a segment refreshes; `today` and `cost` open the dashboard instead (window.luau).
 function M.init(omp: string, hidden: (string, (any) -> ()) -> ())
 	OMP = omp
-	for _, id in { "claude", "codex", "credits", "today", "cost", "dot-1", "dot-2", "dot-3", "dot-4", "dot-5",
+	for _, id in { "claude", "codex", "credits", "dot-1", "dot-2", "dot-3", "dot-4", "dot-5",
 		"pct-1", "pct-2", "pct-3", "pct-4", "pct-5", "pct-crit", "empty", "locked", "reset", "reset-soon", "slack-ok", "slack-bad",
 		"eta" } do
 		hidden(id, function()

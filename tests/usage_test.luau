@@ -233,4 +233,11 @@ text = render(claude(0.1, 0.5, now_ms + 5 * DAY))
 expect(text:find("⏳", 1, true) == nil, "forecast hidden", text)
 settle("part", "forecast")
 
+-- Today's total goes to tern.kv under its local date, for the dashboard; days older than 62 are dropped.
+local today_key = os.date("%Y-%m-%d") :: string
+store.days = { ["2000-01-01"] = { tokens = 1, cost = 1 } }
+render(claude(0.1, 0, now_ms + 7 * DAY))
+expect(store.days[today_key] and store.days[today_key].cost == 12.4, "today's cost is stored for the dashboard", "")
+expect(store.days["2000-01-01"] == nil, "days older than 62 are dropped", "")
+
 print("usage_test: ok")
