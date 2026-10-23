@@ -2,7 +2,9 @@
 
 Every version `plugin.toml` names has a section here. When that version reaches `main`, CI publishes the section as the GitHub release, and installed copies of the plugin show it.
 
-## Unreleased
+## 0.4.0
+
+**Upgrading from 0.3.x:** run `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force` once. From this version on the plugin tells you about new releases and updates itself with one click.
 
 - A provider omp has no account for is hidden. Signed in to Claude only, the bar used to show a permanent `⬢ Codex ?` and `⚠`.
 - Settings from the palette (type `OMP usage`): show or hide each part, language (`en`, `pt-BR`, `es`, `zh-CN`, `ja`), work days per week and the red-badge threshold. They live in `tern.kv`, so an update keeps them.
