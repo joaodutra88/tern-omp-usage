@@ -17,3 +17,24 @@ jobs:
           chmod +x "$RUNNER_TEMP/luau/"*
           echo "LUAU_DIR=$RUNNER_TEMP/luau" >> "$GITHUB_ENV"
       - run: python3 scripts/check.py
+
+  # A version in plugin.toml without a release yet becomes one, its notes taken from CHANGELOG.md.
+  release:
+    needs: check
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish the plugin.toml version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v=$(sed -n 's/^version = "\(.*\)"/\1/p' plugin.toml)
+          if gh release view "v$v" >/dev/null 2>&1; then
+            echo "v$v is already released"
+            exit 0
+          fi
+          awk -v v="$v" '/^## /{p = ($2 == v); next} p' CHANGELOG.md > notes.md
+          gh release create "v$v" --title "v$v" --notes-file notes.md --target "$GITHUB_SHA"

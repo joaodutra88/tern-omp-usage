@@ -56,6 +56,15 @@ def check_manifest() -> None:
     step("plugin.toml window file exists", bool(window) and (ROOT / window).exists(), f"window = {window}")
 
 
+def check_changelog() -> None:
+    text = (ROOT / "plugin.toml").read_text(encoding="utf-8")
+    version = (re.search(r'^version\s*=\s*"([^"]+)"', text, re.M) or [None, ""])[1]
+    log = ROOT / "CHANGELOG.md"
+    notes = log.read_text(encoding="utf-8") if log.exists() else ""
+    # CI publishes this section as the release notes, so a version bump without it would ship empty notes.
+    step(f"CHANGELOG.md has a section for {version}", bool(re.search(rf"^## {re.escape(version)}\s*$", notes, re.M)))
+
+
 def check_css() -> None:
     for name in ("window.luau",):
         text = (ROOT / name).read_text(encoding="utf-8")
@@ -114,6 +123,7 @@ def check_tern() -> None:
 
 def main() -> int:
     check_manifest()
+    check_changelog()
     check_css()
     check_luau()
     if "--tern" in sys.argv:
