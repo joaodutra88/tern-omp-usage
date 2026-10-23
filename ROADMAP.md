@@ -2,6 +2,12 @@
 
 What shipped, what comes next, and the rules every change follows. Ideas and votes go to [Discussions](https://github.com/joaodutra88/tern-omp-usage/discussions); anything marked **good first issue** in [Issues](https://github.com/joaodutra88/tern-omp-usage/issues) is a fine place to start.
 
+## Shipped in 0.4.1
+
+- **The one-click update works on Windows.** It ran inside the plugin's own folder, which Windows won't replace. On Windows, 0.4.0 users reinstall by hand once.
+- **No more frozen bar after a load.** The load timer started four processes in one callback, Tern's 50 ms ran out, and Tern turned off every timer of the plugin.
+- **CI with an integration round.** Every pull request runs the unit tests, then the whole plugin in a fake Tern with recorded `omp` and GitHub answers, on Linux, Windows and macOS. `main` takes a merge only when both pass, and the release waits for them too.
+
 ## Shipped in 0.4.0
 
 - **Releases from the manifest.** Bumping `version` in `plugin.toml` on `main` publishes the GitHub release, with that version's section of `CHANGELOG.md` as the notes. `scripts/check.py` fails when the version has no section.
@@ -23,8 +29,8 @@ What shipped, what comes next, and the rules every change follows. Ideas and vot
 
 ## Rules for every change
 
-- The status formatter gets 4 ms: no process, file or `tern.kv` read inside `tern.chrome.status`.
+- The status formatter gets 4 ms: no process, file or `tern.kv` read inside `tern.chrome.status`. Timers and callbacks get 50 ms: start one process or request per callback at most.
 - Tern's CSS is a subset; `scripts/check.py` catches the properties it rejects. Strings must be valid UTF-8.
 - Every word the plugin shows lives in `labels.luau`.
 - The only network request is the daily release check, with no token, and it can be turned off.
-- `python scripts/check.py` (and `--tern`, when you have Tern) passes, and every new behavior gets a case in `tests/`.
+- `python scripts/check.py` and `--integration` pass (and `--tern`, when you have Tern), and every new behavior gets a case in `tests/`. Test data comes from real `omp` output with every e-mail, account id and org name replaced by fakes.

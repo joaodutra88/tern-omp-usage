@@ -14,7 +14,7 @@ local t0 = 1792000000 // 3600 * HOUR -- an hour start
 -- Two Codex accounts in the same hour are averaged; a later hour comes after it; other providers and fields
 -- without a number are left out.
 local s = history.series({
-	{ limitId = "openai-codex:primary", usedFraction = 0.2, recordedAt = t0 + 5000, email = "a@b.c" },
+	{ limitId = "openai-codex:primary", usedFraction = 0.2, recordedAt = t0 + 5000, email = "user@example.com" },
 	{ limitId = "openai-codex:primary", usedFraction = 0.6, recordedAt = t0 + 9000 },
 	{ limitId = "anthropic:5h", usedFraction = 0.9, recordedAt = t0 + HOUR },
 	{ limitId = "anthropic:5h", usedFraction = 0.3, recordedAt = t0 },

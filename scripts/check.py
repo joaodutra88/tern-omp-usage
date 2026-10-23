@@ -152,6 +152,19 @@ def check_integration() -> None:
         step(name, res.returncode == 0, (res.stderr or res.stdout).strip())
 
 
+def check_fixtures() -> None:
+    # Fixtures are recorded from real omp output and the repository is public: only fake addresses may stay.
+    # ponytail: e-mails only; account ids and org names are random strings a regex can't tell from fakes.
+    hits = sorted({
+        m
+        for p in (ROOT / "tests").rglob("*.luau")
+        if p.name != "sources.luau"
+        for m in re.findall(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+", p.read_text(encoding="utf-8"))
+        if not m.endswith("@example.com")
+    })
+    step("tests hold no real e-mail address (use user@example.com)", not hits, ", ".join(hits))
+
+
 def main() -> int:
     if "--integration" in sys.argv:
         check_integration()
@@ -159,6 +172,7 @@ def main() -> int:
         check_manifest()
         check_changelog()
         check_css()
+        check_fixtures()
         check_luau()
     if "--tern" in sys.argv:
         check_tern()
