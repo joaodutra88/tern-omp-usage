@@ -182,23 +182,26 @@ function M.fetch(invalidate: boolean?)
 		end
 	end
 	local function go()
+		-- nil data means omp failed; an answer with no account for the provider hides its group instead.
 		run_json({ OMP, "usage", "--json", "-p", "anthropic" }, function(data)
-			local c = data and parse_claude(data)
-			failed.claude = c == nil
-			if c then
-				claude = c
-				track("c5", c.five)
-				track("cwk", c.week)
+			failed.claude = data == nil
+			if data then
+				claude = parse_claude(data)
+				if claude then
+					track("c5", claude.five)
+					track("cwk", claude.week)
+				end
 			end
 			finish()
 		end)
 		run_json({ OMP, "usage", "--json", "-p", "openai-codex" }, function(data)
-			local x = data and parse_codex(data)
-			failed.codex = x == nil
-			if x then
-				codex = x
-				track("x5", x.five)
-				track("xwk", x.week)
+			failed.codex = data == nil
+			if data then
+				codex = parse_codex(data)
+				if codex then
+					track("x5", codex.five)
+					track("xwk", codex.week)
+				end
 			end
 			finish()
 		end)
