@@ -7,6 +7,7 @@ Every version `plugin.toml` names has a section here. When that version reaches 
 - A provider omp has no account for is hidden. Signed in to Claude only, the bar used to show a permanent `⬢ Codex ?` and `⚠`.
 - Settings from the palette (type `OMP usage`): show or hide each part, language (`en`, `pt-BR`, `es`, `zh-CN`, `ja`), work days per week and the red-badge threshold. They live in `tern.kv`, so an update keeps them.
 - Every word lives in `labels.luau`; a language that leaves a key out falls back to English.
+- Update notice: once a day the plugin looks at the latest GitHub release. A newer one shows a blue `⬆` badge and one toast; clicking it reinstalls the plugin (`tern plugin install … --force`), keeping your settings and `extras.luau`. After the update a toast names the new version, and **OMP usage: what's new** opens its notes. Hide the `updates` part or set `OMP_USAGE_NO_UPDATE_CHECK=1` to stop checking.
 
 ## 0.3.1
 

@@ -1,5 +1,5 @@
 -- Every word the plugin shows, by language. To add one, copy `en`, translate the values and open a pull request;
--- a key a language leaves out falls back to English.
+-- a key a language leaves out falls back to English. Keep each `%s` (a version number) where it fits the sentence.
 return {
 	en = {
 		left = "left",
@@ -9,6 +9,14 @@ return {
 		reset = "reset",
 		on = "on",
 		off = "off",
+		update_ready = "OMP usage %s is out",
+		update_how = "Click ⬆ in the status line to update",
+		updating = "Updating OMP usage…",
+		updated = "OMP usage updated to %s",
+		whats_new = "Palette › OMP usage: what's new",
+		update_linked = "Linked checkout: update it with git pull",
+		update_failed = "Update failed",
+		up_to_date = "OMP usage %s is the latest",
 	},
 	["pt-BR"] = {
 		left = "sobra",
@@ -18,6 +26,14 @@ return {
 		reset = "reset",
 		on = "ligado",
 		off = "desligado",
+		update_ready = "Saiu o OMP usage %s",
+		update_how = "Clique em ⬆ na barra de status para atualizar",
+		updating = "Atualizando o OMP usage…",
+		updated = "OMP usage atualizado para %s",
+		whats_new = "Paleta › OMP usage: what's new",
+		update_linked = "Checkout linkado: atualize com git pull",
+		update_failed = "A atualização falhou",
+		up_to_date = "O OMP usage %s é a versão mais recente",
 	},
 	es = {
 		left = "quedan",
@@ -27,6 +43,14 @@ return {
 		reset = "reinicio",
 		on = "activado",
 		off = "desactivado",
+		update_ready = "Salió OMP usage %s",
+		update_how = "Haz clic en ⬆ en la barra de estado para actualizar",
+		updating = "Actualizando OMP usage…",
+		updated = "OMP usage actualizado a %s",
+		whats_new = "Paleta › OMP usage: what's new",
+		update_linked = "Checkout enlazado: actualízalo con git pull",
+		update_failed = "La actualización falló",
+		up_to_date = "OMP usage %s es la última versión",
 	},
 	["zh-CN"] = {
 		left = "剩余",
@@ -36,6 +60,14 @@ return {
 		reset = "重置",
 		on = "开启",
 		off = "关闭",
+		update_ready = "OMP usage %s 已发布",
+		update_how = "点击状态栏中的 ⬆ 进行更新",
+		updating = "正在更新 OMP usage…",
+		updated = "OMP usage 已更新到 %s",
+		whats_new = "命令面板 › OMP usage: what's new",
+		update_linked = "这是链接的检出：请用 git pull 更新",
+		update_failed = "更新失败",
+		up_to_date = "OMP usage %s 已是最新版本",
 	},
 	ja = {
 		left = "残り",
@@ -45,5 +77,13 @@ return {
 		reset = "リセット",
 		on = "オン",
 		off = "オフ",
+		update_ready = "OMP usage %s が公開されました",
+		update_how = "ステータスラインの ⬆ をクリックして更新",
+		updating = "OMP usage を更新しています…",
+		updated = "OMP usage を %s に更新しました",
+		whats_new = "パレット › OMP usage: what's new",
+		update_linked = "リンクされたチェックアウトです。git pull で更新してください",
+		update_failed = "更新に失敗しました",
+		up_to_date = "OMP usage %s は最新です",
 	},
 }

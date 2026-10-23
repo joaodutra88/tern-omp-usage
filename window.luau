@@ -1,8 +1,10 @@
 -- Claude and Codex usage from omp in Tern's status line (usage.luau). See README.md.
 local config = require("./config")
+local update = require("./update")
 local usage = require("./usage")
 local FETCH_MS = 5 * 60 * 1000 -- Anthropic usage endpoint answers 429 below ~5 min
 local TICK_MS = 60 * 1000
+local UPDATE_MS = 60 * 60 * 1000 -- update.check asks GitHub at most once a day; this only looks at the cache
 
 -- Tern's app may not inherit the shell PATH, so prefer the omp that Tern itself manages.
 local function managed_omp(): string?
@@ -55,9 +57,10 @@ tern.command({
 usage.init(OMP, hidden)
 config.load()
 config.commands()
+update.init()
 
 -- window_start doesn't fire again after `tern plugin reload`; a load-time timer covers both.
-tern.timer(0, function()
+tern.timer(0, function(cx)
 	every(FETCH_MS, usage.fetch)
 	every(FETCH_MS, usage.fetch_today)
 	tern.timer(TICK_MS, function()
@@ -67,6 +70,14 @@ tern.timer(0, function()
 			tern.chrome.refresh()
 		end)
 	end)
+	if cx then
+		update.greet(cx)
+	end
+	local function look(later)
+		update.check(false, later)
+		tern.timer(UPDATE_MS, look)
+	end
+	look(cx)
 end)
 
 tern.css("statusline", [[
@@ -105,20 +116,38 @@ tern.css("statusline", [[
 #statusline .sl-plugin[title="plugin.omp-usage.pct-4"] { color: #f97316; font-weight: 600; }
 #statusline .sl-plugin[title="plugin.omp-usage.pct-crit"] { color: #fff; font-weight: 700; background: #dc2626;
   padding: 0 4px; border-radius: 3px; animation: omppulse 1.2s ease-in-out infinite; }
+#statusline .sl-plugin[title="plugin.omp-usage.update"] { margin-left: 10px; padding: 0 6px; border-radius: 4px;
+  color: #fff; background: #2563eb; font-weight: 700; }
 @keyframes omppulse { 50% { opacity: 0.35; } }
 ]])
 
--- Optional local file for personal segments; absent in a fresh install.
-local has_extras, extras = pcall(require, "./extras")
-if has_extras then
+-- Personal segments: extras.luau beside window.luau (git ignores it), else the copy an update moved to the
+-- data folder, because `tern plugin install --force` replaces this folder.
+local function load_extras(): any?
+	local ok, mod = pcall(require, "./extras")
+	if ok then
+		return mod
+	end
+	local kept = tern.plugin.data .. "/extras.luau"
+	if not tern.fs.exists(kept) then
+		return nil
+	end
+	local chunk = loadstring(tern.fs.read(kept), "=extras.luau")
+	local loaded, result = pcall(chunk or error)
+	return if loaded then result else nil
+end
+local extras = load_extras()
+if extras then
 	extras.init(hidden, every)
 end
 
 tern.chrome.status(function(pane)
 	local out = {}
-	if has_extras then
+	if extras then
 		extras.segments(out, pane)
 	end
+	-- First, so a narrow window that clips the end of the status line still shows it.
+	update.segments(out)
 	usage.segments(out)
 	return out
 end)
