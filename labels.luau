@@ -1,5 +1,6 @@
 -- Every word the plugin shows, by language. To add one, copy `en`, translate the values and open a pull request;
--- a key a language leaves out falls back to English. Keep each `%s` (a version number) where it fits the sentence.
+-- a key a language leaves out falls back to English. Keep each `%s`/`%d` in order: alerts get the provider
+-- (Claude, Codex), the window (5h, wk, Fable), then the percentage; update lines get a version number.
 return {
 	en = {
 		left = "left",
@@ -17,6 +18,10 @@ return {
 		update_linked = "Linked checkout: update it with git pull",
 		update_failed = "Update failed",
 		up_to_date = "OMP usage %s is the latest",
+		alert_hot = "%s %s at %d%%",
+		alert_locked = "%s %s is locked",
+		alert_free = "%s %s is free again",
+		resets_in = "resets in %s",
 	},
 	["pt-BR"] = {
 		left = "sobra",
@@ -34,6 +39,10 @@ return {
 		update_linked = "Checkout linkado: atualize com git pull",
 		update_failed = "A atualização falhou",
 		up_to_date = "O OMP usage %s é a versão mais recente",
+		alert_hot = "%s %s em %d%%",
+		alert_locked = "%s %s travou",
+		alert_free = "%s %s liberou",
+		resets_in = "reset em %s",
 	},
 	es = {
 		left = "quedan",
@@ -51,6 +60,10 @@ return {
 		update_linked = "Checkout enlazado: actualízalo con git pull",
 		update_failed = "La actualización falló",
 		up_to_date = "OMP usage %s es la última versión",
+		alert_hot = "%s %s al %d%%",
+		alert_locked = "%s %s está bloqueado",
+		alert_free = "%s %s vuelve a estar libre",
+		resets_in = "se reinicia en %s",
 	},
 	["zh-CN"] = {
 		left = "剩余",
@@ -68,6 +81,10 @@ return {
 		update_linked = "这是链接的检出：请用 git pull 更新",
 		update_failed = "更新失败",
 		up_to_date = "OMP usage %s 已是最新版本",
+		alert_hot = "%s %s 已达 %d%%",
+		alert_locked = "%s %s 已锁定",
+		alert_free = "%s %s 已解锁",
+		resets_in = "%s 后重置",
 	},
 	ja = {
 		left = "残り",
@@ -85,5 +102,9 @@ return {
 		update_linked = "リンクされたチェックアウトです。git pull で更新してください",
 		update_failed = "更新に失敗しました",
 		up_to_date = "OMP usage %s は最新です",
+		alert_hot = "%s %s が %d%% に到達",
+		alert_locked = "%s %s がロックされました",
+		alert_free = "%s %s が再び使えます",
+		resets_in = "%s 後にリセット",
 	},
 }

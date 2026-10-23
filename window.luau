@@ -100,6 +100,7 @@ tern.css("statusline", [[
   color: #f87171; background: rgb(239 68 68 / 18%); font-weight: 700; animation: omppulse 1.2s ease-in-out infinite; }
 #statusline .sl-plugin[title="plugin.omp-usage.reset"] { color: rgb(255 255 255 / 45%); }
 #statusline .sl-plugin[title="plugin.omp-usage.reset-soon"] { color: #4ade80; font-weight: 600; }
+#statusline .sl-plugin[title="plugin.omp-usage.eta"] { margin-left: 4px; color: #fb923c; font-weight: 600; }
 #statusline .sl-plugin[title="plugin.omp-usage.locked"] { margin-left: 16px; color: #fff; background: #b91c1c;
   padding: 0 6px; border-radius: 4px; font-weight: 700; animation: omppulse 0.9s ease-in-out infinite; }
 #statusline .sl-plugin[title^="plugin.omp-usage.dot-"] { margin-left: 0; }

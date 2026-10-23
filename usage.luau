@@ -154,14 +154,38 @@ local function animate()
 	tern.timer(90, step)
 end
 
+-- 0 calm, 1 at the red-badge threshold, 2 locked.
+local levels: { [string]: number } = {}
+
+-- A toast when a window climbs to the threshold, locks, or frees up again. The first reading after a load only
+-- records where each window stands, so a reload never repeats an old alert.
+local function alert(cx: any, key: string, name: string, window: string, f: number?, reset_ms: number?)
+	local new = if not f then 0 elseif f >= 1 then 2 elseif f >= config.get("crit") then 1 else 0
+	local old = levels[key]
+	levels[key] = new
+	if old == nil or new == old or not cx or not config.shows("alerts") then
+		return
+	end
+	local mins = mins_until(reset_ms)
+	local sub = if mins then string.format(config.labels.resets_in, hm(mins)) else nil
+	local L = config.labels
+	if new == 2 then
+		cx:toast("error", string.format(L.alert_locked, name, window), sub)
+	elseif new == 1 and old == 0 then
+		cx:toast("info", string.format(L.alert_hot, name, window, math.floor((f :: number) * 100 + 0.5)), sub)
+	elseif old == 2 then
+		cx:toast("success", string.format(L.alert_free, name, window))
+	end
+end
+
 -- tern.process.run raises synchronously when the binary is missing; treat that as a failed fetch.
-local function run_json(argv: { string }, done: (any?) -> ())
-	local started = pcall(tern.process.run, argv, { timeout_ms = 60000 }, function(res)
+local function run_json(argv: { string }, done: (any?, any?) -> ())
+	local started = pcall(tern.process.run, argv, { timeout_ms = 60000 }, function(res, cx)
 		local ok, data = pcall(tern.json.decode, res.stdout)
-		done(if res.status == 0 and ok then data else nil)
+		done(if res.status == 0 and ok then data else nil, cx)
 	end)
 	if not started then
-		done(nil)
+		done(nil, nil)
 	end
 end
 
@@ -181,24 +205,29 @@ function M.fetch(invalidate: boolean?)
 	end
 	local function go()
 		-- nil data means omp failed; an answer with no account for the provider hides its group instead.
-		run_json({ OMP, "usage", "--json", "-p", "anthropic" }, function(data)
+		run_json({ OMP, "usage", "--json", "-p", "anthropic" }, function(data, cx)
 			failed.claude = data == nil
 			if data then
 				claude = parse_claude(data)
 				if claude then
 					track("c5", claude.five)
 					track("cwk", claude.week)
+					alert(cx, "c5", "Claude", "5h", claude.five, claude.five_reset)
+					alert(cx, "cwk", "Claude", "wk", claude.week, claude.week_reset)
+					alert(cx, "cf", "Claude", "Fable", claude.fable, claude.fable_reset)
 				end
 			end
 			finish()
 		end)
-		run_json({ OMP, "usage", "--json", "-p", "openai-codex" }, function(data)
+		run_json({ OMP, "usage", "--json", "-p", "openai-codex" }, function(data, cx)
 			failed.codex = data == nil
 			if data then
 				codex = parse_codex(data)
 				if codex then
 					track("x5", codex.five)
 					track("xwk", codex.week)
+					alert(cx, "x5", "Codex", "5h", codex.five, codex.five_reset)
+					alert(cx, "xwk", "Codex", "wk", codex.week, codex.week_reset)
 				end
 			end
 			finish()
@@ -253,6 +282,28 @@ local function credits_tail(n: number): string?
 	return if n > 0 and config.shows("credits") then " ✦" .. n else nil
 end
 
+-- Minutes until the window runs out at its average pace since it opened, when that comes before its reset.
+-- ponytail: linear pace, so a burst early in the window overstates it; nothing shows under 50% used.
+local function runs_out(f: number?, reset_ms: number?, span_s: number): number?
+	if not f or not reset_ms or f < 0.5 or f >= 1 then
+		return nil
+	end
+	local now = os.time()
+	local elapsed = now - (reset_ms / 1000 - span_s)
+	if elapsed < 600 then
+		return nil
+	end
+	local left = (1 - f) * elapsed / f
+	return if now + left < reset_ms / 1000 then math.floor(left / 60) else nil
+end
+
+local function forecast(out: { any }, f: number?, reset_ms: number?, span_s: number)
+	local mins = config.shows("forecast") and runs_out(f, reset_ms, span_s)
+	if mins then
+		table.insert(out, { text = "⏳" .. hm(mins), command = P .. "eta" })
+	end
+end
+
 function M.segments(out: { any })
 	local show_claude, show_codex = config.shows("claude"), config.shows("codex")
 	local c = claude
@@ -260,7 +311,9 @@ function M.segments(out: { any })
 		locked(out, "CLAUDE", c.five, c.week, c.five_reset, c.week_reset, credits_tail(c.credits))
 		table.insert(out, { text = "✻ Claude", command = P .. "claude" })
 		bar(out, "5h", c.five, "c5")
+		forecast(out, c.five, c.five_reset, 5 * 3600)
 		bar(out, "wk", c.week, "cwk")
+		forecast(out, c.week, c.week_reset, 7 * 86400)
 		if c.fable and config.shows("fable") then
 			bar(out, "Fable", c.fable, "cf")
 		end
@@ -313,7 +366,8 @@ end
 function M.init(omp: string, hidden: (string, (any) -> ()) -> ())
 	OMP = omp
 	for _, id in { "claude", "codex", "credits", "today", "cost", "dot-1", "dot-2", "dot-3", "dot-4", "dot-5",
-		"pct-1", "pct-2", "pct-3", "pct-4", "pct-5", "pct-crit", "empty", "locked", "reset", "reset-soon", "slack-ok", "slack-bad" } do
+		"pct-1", "pct-2", "pct-3", "pct-4", "pct-5", "pct-crit", "empty", "locked", "reset", "reset-soon", "slack-ok", "slack-bad",
+		"eta" } do
 		hidden(id, function()
 			M.fetch(true)
 		end)

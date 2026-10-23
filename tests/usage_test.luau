@@ -13,6 +13,13 @@ end
 
 local store: { [string]: any } = {}
 
+local toasts: { { string } } = {}
+local window_cx = {
+	toast = function(_self, level: string, text: string, sub: string?)
+		table.insert(toasts, { level, text, sub or "" })
+	end,
+}
+
 local fake = {
 	kv = {
 		get = function(key: string)
@@ -37,7 +44,7 @@ local fake = {
 				error("tern.process.run omp: No such file or directory (os error 2)")
 			end
 			local cb = if type(opts) == "function" then opts else done
-			cb({ status = 0, stdout = reply(argv) })
+			cb({ status = 0, stdout = reply(argv) }, window_cx)
 		end,
 	},
 }
@@ -196,5 +203,34 @@ config.reset()
 text, cmd = render(claude(0.65, 0, now_ms + 7 * DAY))
 expect(cmd["plugin.omp-usage.pct-crit"] == nil, "reset brings the threshold back to 80%", text)
 expect(store.settings ~= nil and next(store.settings) == nil, "reset leaves an empty store", "")
+
+-- Alerts: climbing to the threshold, locking and freeing up each toast once; holding a level says nothing.
+toasts = {}
+render(claude(0.85, 0, now_ms + 7 * DAY))
+expect(#toasts == 1 and toasts[1][2] == "Claude 5h at 85%", "climbing to 80% toasts once", toasts[1] and toasts[1][2] or "")
+expect(toasts[1][3] == "resets in 1h30m", "the toast says when the window resets", toasts[1][3])
+render(claude(0.9, 0, now_ms + 7 * DAY))
+expect(#toasts == 1, "staying above the threshold says nothing", "")
+render(claude(1, 0, now_ms + 7 * DAY))
+expect(toasts[2] and toasts[2][1] == "error" and toasts[2][2] == "Claude 5h is locked", "locking toasts an error", "")
+render(claude(0.1, 0, now_ms + 7 * DAY))
+expect(toasts[3] and toasts[3][2] == "Claude 5h is free again", "freeing up toasts", "")
+settle("part", "alerts")
+render(claude(0.85, 0, now_ms + 7 * DAY))
+expect(#toasts == 3, "alerts hidden means no toast", "")
+settle("part", "alerts")
+
+-- Forecast: at 90% with the reset 90 min away (3.5 h into the 5h window), the average pace runs out in 23 min.
+text = render(claude(0.9, 0, now_ms + 7 * DAY))
+expect(text:find("⏳23m", 1, true) ~= nil, "the 5h window shows when it runs out", text)
+text = render(claude(0.4, 0, now_ms + 7 * DAY))
+expect(text:find("⏳", 1, true) == nil, "under 50% there is no forecast", text)
+-- Half the week gone in two days runs out in two more, before the reset five days away.
+text = render(claude(0.1, 0.5, now_ms + 5 * DAY))
+expect(text:find("⏳2d00h", 1, true) ~= nil, "the week shows when it runs out", text)
+settle("part", "forecast")
+text = render(claude(0.1, 0.5, now_ms + 5 * DAY))
+expect(text:find("⏳", 1, true) == nil, "forecast hidden", text)
+settle("part", "forecast")
 
 print("usage_test: ok")
