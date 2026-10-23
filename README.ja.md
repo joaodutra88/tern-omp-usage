@@ -170,7 +170,7 @@ Tern は、エラーを起こした、またはステータスフォーマッタ
 エージェントの入力の大部分を占めるキャッシュ読み取りが含まれているためです。コストは、それらのトークンを API 価格で計算した金額であり、サブスクリプションの請求額ではありません。
 
 **アップデートするには?**
-青い `⬆` が表示されたらクリックするか、**OMP usage: update to the latest version** を実行してください。手動の場合: `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`。0.4.0 より前のバージョンには更新確認がないため、一度だけ手動で更新してください。
+青い `⬆` が表示されたらクリックするか、**OMP usage: update to the latest version** を実行してください。手動の場合: `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`。0.4.0 より前のバージョンには更新確認がなく、Windows では 0.4.0 の更新が "The process cannot access the file" で失敗するため、これらは一度だけ手動で更新してください。
 
 **アンインストールするには?**
 `tern plugin remove omp-usage` を実行してください。
@@ -179,7 +179,7 @@ Tern は、エラーを起こした、またはステータスフォーマッタ
 
 このプロジェクトは MIT ライセンスのオープンソースです。使う、フォークする、変更する、配布する、いずれも自由です。Issue とプルリクエストは誰に対しても開かれています。
 
-- `python scripts/check.py` は構文、テスト、CSS、マニフェストを検証します。CI も同じものを実行します。`--tern` を付けると、お使いの Tern でプラグインを再読み込みし、そのログも確認します。
+- `python scripts/check.py` は構文チェック、ユニットテスト、CSS とマニフェストのチェックを実行します。`--integration` は、記録した `omp` と GitHub の応答を使い、模擬 Tern の中でプラグイン全体を実行します。CI はすべての pull request で、この 2 つを Linux、Windows、macOS 上で実行します。`--tern` を付けると、お使いの Tern でプラグインを再読み込みし、そのログも確認します。
 - AI エージェントを使っていますか? [AGENTS.md](AGENTS.md) を指定してください。間違えやすいルールと、適切なバグ報告の書き方を説明しています。
 - 予定している内容と、変更が守るべきルールは [ROADMAP.md](ROADMAP.md)(英語)にあります。アイデアは [Discussions](https://github.com/joaodutra88/tern-omp-usage/discussions) へどうぞ。**good first issue** の付いた issue は最初の一歩に向いています。
 - 詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。参加者は全員 [行動規範](CODE_OF_CONDUCT.md) に従います。セキュリティの問題は [SECURITY.md](SECURITY.md) から報告してください。

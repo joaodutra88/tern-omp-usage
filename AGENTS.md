@@ -14,12 +14,15 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 | `config.luau` | Finds `omp` (`OMP_USAGE_BIN`, then the copy Tern manages, then `PATH`); settings in `tern.kv` (parts shown, language, work days, red-badge threshold) and the palette commands that change them. |
 | `labels.luau` | Every word the plugin shows, one table per language. |
 | `update.luau` | Daily GitHub release check, the `⬆` segment and its toast, the one-click reinstall, the toast after an update. |
-| `tests/*_test.luau` | Run the modules against a fake `tern` (canned `omp` replies, a canned GitHub answer) and check what the bar and the toasts say. |
-| `scripts/check.py` | The gate. CI runs it; run it yourself before proposing a change. |
+| `tests/*_test.luau` | Unit: one module against a fake `tern` (canned `omp` replies, a canned GitHub answer); checks what the bar and the toasts say. |
+| `tests/integration/` | Integration: `harness.luau` loads both halves like Tern, with a fake clock, Tern's budgets, a Windows-like reinstall and the recorded replies in `fixtures.luau`; scenarios in `plugin_test.luau`. |
+| `scripts/check.py` | The gate: plain (unit), `--integration`, `--tern`. CI runs the first two on every pull request. |
 
 ## Rules that are easy to break
 
 - **The status formatter has 4 ms.** Tern disables a plugin that goes over. Never run a process, read a file or walk directories inside `tern.chrome.status`; do it in `tern.timer` or a `tern.process.run` callback and cache the result.
+- **Timers and callbacks have 50 ms.** Over that, Tern turns off every timer of the plugin until a reload, and the bar freezes. Start one process or request per callback at most; start the next one from its callback, or from another timer. The integration harness fails a change that breaks this.
+- **Run installs outside the plugin folder.** `tern.process.run` starts in the plugin's folder by default, and on Windows `tern plugin install --force` can't replace a folder a process is running in: pass `cwd = tern.plugin.data`.
 - **Tern's CSS is a subset.** `text-shadow`, `margin-block` and friends are rejected (the check catches them). Style a segment by its title: `#statusline .sl-plugin[title="plugin.omp-usage.<command>"]`, which is why every segment carries a `command` even when it only refreshes.
 - **UTF-8.** Strings sent to Tern must stay valid UTF-8. Cut text by characters (`utf8.offset`), never by bytes.
 - **Anthropic rate-limits** its usage endpoint below about 5 minutes. Don't poll faster than `FETCH_MS`.
@@ -35,11 +38,12 @@ The palette: `OMP usage: show or hide a part…`, `language…`, `work days per 
 ## Before you propose a change
 
 ```sh
-python scripts/check.py          # syntax, tests, CSS, manifest
-python scripts/check.py --tern   # also reloads the plugin in Tern and reads the log (when Tern is installed)
+python scripts/check.py                # syntax, unit tests, CSS, manifest, changelog
+python scripts/check.py --integration  # the whole plugin in a fake Tern (budgets, update, dashboard)
+python scripts/check.py --tern         # also reloads the plugin in Tern and reads the log (when Tern is installed)
 ```
 
-Both must end with `all checks passed`. Add a case to `tests/usage_test.luau` when you change what the bar shows.
+All must end with `all checks passed`. Add a case to `tests/usage_test.luau` when you change what the bar shows, and a scenario to `tests/integration/plugin_test.luau` when a change crosses modules, timers or the update. Fixtures come from real `omp` output: record with `--redact`, then replace every e-mail, account id and org name with fakes.
 
 ## When the user hits a bug
 

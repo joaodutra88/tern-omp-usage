@@ -1,0 +1,18 @@
+name: Install Luau
+description: Puts the Luau CLI (luau, luau-compile) of a fixed version in LUAU_DIR, on Linux, macOS or Windows.
+inputs:
+  version:
+    description: Luau release tag
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        LUAU_VERSION: ${{ inputs.version }}
+      run: |
+        case "$RUNNER_OS" in Linux) os=ubuntu ;; macOS) os=macos ;; Windows) os=windows ;; esac
+        curl -sSfL -o "$RUNNER_TEMP/luau.zip" "https://github.com/luau-lang/luau/releases/download/$LUAU_VERSION/luau-$os.zip"
+        python -m zipfile -e "$RUNNER_TEMP/luau.zip" "$RUNNER_TEMP/luau"
+        chmod +x "$RUNNER_TEMP/luau/"* || true
+        echo "LUAU_DIR=$RUNNER_TEMP/luau" >> "$GITHUB_ENV"
