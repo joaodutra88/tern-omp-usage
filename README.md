@@ -30,10 +30,10 @@ Everything stays in the status line, so the answers are on screen while you work
 
 | Looks like | Meaning |
 |---|---|
-| <img src="assets/seg-window.png" height="28" alt="5h window"> | Usage of one window: 5h, week (`wk`), and Fable when your plan has it. Each dot keeps its own color, green to red, and the percentage takes the color of the last dot reached. At 80% the percentage turns into a pulsing red badge. |
+| <img src="assets/seg-window.png" height="28" alt="5h window"> | Usage of one window: 5h, week (`wk`), and Fable when your plan has it. Each dot keeps its own color, green to red, and the percentage takes the color of the last dot reached. At 80% (you can change this) the percentage turns into a pulsing red badge. |
 | <img src="assets/seg-reset.png" height="28" alt="reset countdown"> | Time until the Claude 5h window resets. Turns green when it is under 30 min and the 5h window is at 80% or more, meaning relief is close. |
 | <img src="assets/seg-credits.png" height="28" alt="saved resets"> | Usage-limit resets you have saved. |
-| <img src="assets/seg-budget.png" height="28" alt="work-week budget"> | Work-week budget. Each Monday-to-Friday day of the current 7-day window unlocks 20% of the weekly quota. `left` is quota unlocked and not spent yet. `over` (pulsing red) means you are spending ahead of the week. |
+| <img src="assets/seg-budget.png" height="28" alt="work-week budget"> | Work-week budget. Each work day (Monday to Friday unless you change it) of the current 7-day window unlocks an equal share of the weekly quota, 20% with five days. `left` is quota unlocked and not spent yet. `over` (pulsing red) means you are spending ahead of the week. |
 | <img src="assets/seg-codex.png" height="28" alt="Codex"> | Codex. `×2` is the number of linked accounts, and the windows show the share of accounts used up. |
 | <img src="assets/seg-today.png" height="28" alt="today's tokens and cost"> | Tokens and API-price cost since local midnight, all providers, from `omp stats`. Cache reads count as tokens, so most of this number is cache. |
 | <img src="assets/seg-refresh.png" height="28" alt="refresh"> | Refresh now. Clicking any usage segment does the same. |
@@ -95,23 +95,25 @@ The plugin makes no network requests and reads no credentials. It only runs omp:
 | `omp stats --json` | Every 5 min |
 | `omp usage invalidate` | When you click a segment, to skip omp's cache |
 
-It writes nothing to disk. The status formatter only reads values cached by those calls, because Tern gives a formatter 4 ms.
+Settings go to the plugin's data folder (`tern.kv`), nowhere else. The status formatter only reads values cached by those calls, because Tern gives a formatter 4 ms.
 
 ## Configuration
 
-| Where | Name | Default |
-|---|---|---|
-| `usage.luau` | `DAILY` | `0.20`, quota unlocked per weekday |
-| `usage.luau` | `TREND_STEP` | `0.03`, rise that earns the `↑` |
-| `usage.luau` | `M.labels` | The words the bar shows (`left`, `over`, `LOCKED`, `tokens`) |
-| `window.luau` | `FETCH_MS` | 5 min |
-| environment | `OMP_USAGE_BIN` | Path to `omp` when Tern can't find it |
+Open the command palette and type `OMP usage`. Settings are kept in the plugin's data folder, so an update or a reinstall keeps them.
 
-Colors are plain CSS at the bottom of `window.luau`. Each segment is `#statusline .sl-plugin[title="plugin.omp-usage.<name>"]`.
+| Command | Does |
+|---|---|
+| **OMP usage: show or hide a part…** | Type a part to turn it on or off: `claude`, `codex`, `today`, `cost`, `budget`, `reset`, `credits`, `fable`. |
+| **OMP usage: language…** | `en`, `pt-BR`, `es`, `zh-CN` or `ja`. |
+| **OMP usage: work days per week…** | How many days, counted from Monday, unlock the weekly quota. The default `5` means Monday to Friday, 20% each. |
+| **OMP usage: red badge threshold…** | The percentage where a window becomes the pulsing red badge (default 80). |
+| **OMP usage: reset settings** | Back to the defaults. |
+
+If Tern's daemon can't find `omp`, set the `OMP_USAGE_BIN` environment variable to its full path. Colors are plain CSS at the bottom of `window.luau`. Each segment is `#statusline .sl-plugin[title="plugin.omp-usage.<name>"]`.
 
 ### In your language
 
-Every word the bar shows lives in `M.labels` at the top of `usage.luau`, so translating is a one-line change. Pull requests adding a language are welcome.
+Every word the plugin shows lives in `labels.luau`, one table per language. To add one, copy `en`, translate the values and open a pull request. Keys a language leaves out fall back to English.
 
 ### Your own segments
 

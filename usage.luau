@@ -1,13 +1,10 @@
 -- Claude + Codex limits from `omp usage --json` (gradient dots, trend, lockout) and today's tokens from `omp stats`.
+local config = require("./config")
 local M = {}
 
 local P = "plugin.omp-usage."
 local DOTS = 5
 local TREND_STEP = 0.03 -- rise between two fetches (5 min) that earns the arrow
-local DAILY = 0.20 -- weekly quota split over Mon–Fri
-
--- Every word the bar shows; translate here.
-M.labels = { left = "left", over = "over", locked = "LOCKED", tokens = "tokens" }
 
 local OMP: string = "omp"
 local busy = false
@@ -42,11 +39,12 @@ local function track(key: string, f: number?)
 	prev[key] = f
 end
 
--- Weekdays of the 7d window up to today each unlock DAILY; a holiday's share stays banked.
+-- Work days (from Monday) of the 7d window up to today each unlock 1/workdays; a holiday's share stays banked.
 local function weekly_slack(used: number?, resets: number?): number?
 	if not used or not resets then
 		return nil
 	end
+	local workdays = config.get("workdays")
 	local start = resets / 1000 - 7 * 86400
 	local today_key = os.date("%Y%m%d") :: string
 	local days = 0
@@ -55,12 +53,12 @@ local function weekly_slack(used: number?, resets: number?): number?
 		if (os.date("%Y%m%d", at) :: string) > today_key then
 			break
 		end
-		local wday = (os.date("*t", at) :: any).wday
-		if wday >= 2 and wday <= 6 then
+		local monday_based = ((os.date("*t", at) :: any).wday + 5) % 7 + 1
+		if monday_based <= workdays then
 			days += 1
 		end
 	end
-	return math.min(1, days * DAILY) - used
+	return math.min(1, days / workdays) - used
 end
 
 local function slack_segment(out: { any }, used: number?, resets: number?)
@@ -70,9 +68,9 @@ local function slack_segment(out: { any }, used: number?, resets: number?)
 	end
 	local pct = math.floor(math.abs(s) * 100 + 0.5)
 	if s >= 0 then
-		table.insert(out, { text = string.format("📅 %s %d%%", M.labels.left, pct), command = P .. "slack-ok" })
+		table.insert(out, { text = string.format("📅 %s %d%%", config.labels.left, pct), command = P .. "slack-ok" })
 	else
-		table.insert(out, { text = string.format("📅 %s %d%%", M.labels.over, pct), command = P .. "slack-bad" })
+		table.insert(out, { text = string.format("📅 %s %d%%", config.labels.over, pct), command = P .. "slack-bad" })
 	end
 end
 
@@ -92,7 +90,7 @@ local function bar(out: { any }, label: string, f: number?, key: string)
 	end
 	local pct = string.format("%d%%", math.floor(f * 100 + 0.5)) .. (if rising[key] then "↑" else "")
 	local step = math.clamp(math.ceil(f * DOTS), 1, DOTS)
-	table.insert(out, { text = pct, command = P .. (if f >= 0.8 then "pct-crit" else "pct-" .. step) })
+	table.insert(out, { text = pct, command = P .. (if f >= config.get("crit") then "pct-crit" else "pct-" .. step) })
 end
 
 local function parse_claude(data): { [string]: any }?
@@ -246,55 +244,67 @@ local function locked(out: { any }, name: string, five: number?, week: number?, 
 	end
 	local mins = mins_until(if (week or 0) >= 1 then rwk else r5)
 	table.insert(out, {
-		text = string.format("%s %s %s%s", name, M.labels.locked, if mins then hm(mins) else "", tail or ""),
+		text = string.format("%s %s %s%s", name, config.labels.locked, if mins then hm(mins) else "", tail or ""),
 		command = P .. "locked",
 	})
 end
 
+local function credits_tail(n: number): string?
+	return if n > 0 and config.shows("credits") then " ✦" .. n else nil
+end
+
 function M.segments(out: { any })
+	local show_claude, show_codex = config.shows("claude"), config.shows("codex")
 	local c = claude
-	if c then
-		locked(out, "CLAUDE", c.five, c.week, c.five_reset, c.week_reset, if c.credits > 0 then " ✦" .. c.credits else nil)
+	if c and show_claude then
+		locked(out, "CLAUDE", c.five, c.week, c.five_reset, c.week_reset, credits_tail(c.credits))
 		table.insert(out, { text = "✻ Claude", command = P .. "claude" })
 		bar(out, "5h", c.five, "c5")
 		bar(out, "wk", c.week, "cwk")
-		if c.fable then
+		if c.fable and config.shows("fable") then
 			bar(out, "Fable", c.fable, "cf")
 		end
 		local mins = mins_until(c.five_reset)
-		if mins then
-			local soon = (c.five or 0) >= 0.8 and mins < 30
-			table.insert(out, { text = "reset " .. hm(mins), command = if soon then P .. "reset-soon" else P .. "reset" })
+		if mins and config.shows("reset") then
+			local soon = (c.five or 0) >= config.get("crit") and mins < 30
+			table.insert(out, {
+				text = config.labels.reset .. " " .. hm(mins),
+				command = if soon then P .. "reset-soon" else P .. "reset",
+			})
 		end
-		if c.credits > 0 then
+		if c.credits > 0 and config.shows("credits") then
 			table.insert(out, { text = "✦" .. c.credits, command = P .. "credits" })
 		end
-		slack_segment(out, c.week, c.week_reset)
-	elseif failed.claude then
+		if config.shows("budget") then
+			slack_segment(out, c.week, c.week_reset)
+		end
+	elseif failed.claude and show_claude then
 		table.insert(out, { text = "✻ Claude ?", tone = "error", command = P .. "refresh" })
 	end
 
 	local x = codex
-	if x then
-		locked(out, "CODEX", x.five, x.week, x.five_reset, x.week_reset, if x.credits > 0 then " ✦" .. x.credits else nil)
+	if x and show_codex then
+		locked(out, "CODEX", x.five, x.week, x.five_reset, x.week_reset, credits_tail(x.credits))
 		table.insert(out, { text = "⬢ Codex", command = P .. "codex" })
 		bar(out, "5h", x.five, "x5")
 		bar(out, "wk", x.week, "xwk")
 		if x.n then
 			table.insert(out, { text = "×" .. x.n, tone = "muted", command = P .. "refresh" })
 		end
-		if x.credits > 0 then
+		if x.credits > 0 and config.shows("credits") then
 			table.insert(out, { text = "✦" .. x.credits, command = P .. "credits" })
 		end
-	elseif failed.codex then
+	elseif failed.codex and show_codex then
 		table.insert(out, { text = "⬢ Codex ?", tone = "error", command = P .. "refresh" })
 	end
 
-	if today then
-		table.insert(out, { text = "🔥 " .. compact(today.tokens) .. " " .. M.labels.tokens, command = P .. "today" })
+	if today and config.shows("today") then
+		table.insert(out, { text = "🔥 " .. compact(today.tokens) .. " " .. config.labels.tokens, command = P .. "today" })
+	end
+	if today and config.shows("cost") then
 		table.insert(out, { text = string.format("💸 $%.0f", today.cost), command = P .. "cost" })
 	end
-	if failed.claude or failed.codex then
+	if (failed.claude and show_claude) or (failed.codex and show_codex) then
 		table.insert(out, { text = "⚠", tone = "error", command = P .. "refresh" })
 	end
 	table.insert(out, if busy then { text = "⟳ …", tone = "muted" } else { text = "⟳", tone = "accent", command = P .. "refresh" })
