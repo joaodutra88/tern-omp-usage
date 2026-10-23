@@ -3,12 +3,27 @@ local usage = require("./usage")
 local FETCH_MS = 5 * 60 * 1000 -- Anthropic usage endpoint answers 429 below ~5 min
 local TICK_MS = 60 * 1000
 
--- Tern's daemon may not inherit the shell PATH, so prefer the omp that Tern itself manages.
-local local_app = tern.getenv("LOCALAPPDATA")
-local OMP = tern.getenv("OMP_USAGE_BIN")
-	or (if local_app and tern.fs.exists(local_app .. "\\Tern\\omp\\bin\\omp.exe")
-		then local_app .. "\\Tern\\omp\\bin\\omp.exe"
-		else "omp")
+-- Tern's app may not inherit the shell PATH, so prefer the omp that Tern itself manages.
+local function managed_omp(): string?
+	local paths: { string } = {}
+	local local_app = tern.getenv("LOCALAPPDATA")
+	if local_app then
+		table.insert(paths, local_app .. "\\Tern\\omp\\bin\\omp.exe")
+	end
+	local home = tern.getenv("HOME")
+	if home then
+		table.insert(paths, home .. "/Library/Application Support/Tern/omp/bin/omp")
+		table.insert(paths, (tern.getenv("XDG_DATA_HOME") or home .. "/.local/share") .. "/Tern/omp/bin/omp")
+	end
+	for _, p in paths do
+		if tern.fs.exists(p) then
+			return p
+		end
+	end
+	return nil
+end
+
+local OMP = tern.getenv("OMP_USAGE_BIN") or managed_omp() or "omp"
 
 local function every(ms: number, fn: () -> ())
 	local function loop()

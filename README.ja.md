@@ -70,7 +70,7 @@
 tern plugin install https://github.com/joaodutra88/tern-omp-usage
 ```
 
-Anthropic と / または OpenAI Codex に `omp` でサインインしておく必要があります。ターミナルで `omp usage` が動作することを確認してください。このプラグインは Tern が管理する omp (`%LOCALAPPDATA%\Tern\omp\bin\omp.exe`) を使用し、見つからない場合は `PATH` 上の `omp` にフォールバックします。Tern のデーモンが見つけられない場合は、`OMP_USAGE_BIN` にフルパスを設定してください。
+Anthropic と / または OpenAI Codex に `omp` でサインインしておく必要があります。ターミナルで `omp usage` が動作することを確認してください。このプラグインは Tern が管理する omp (Windows では `%LOCALAPPDATA%\Tern\omp\bin\omp.exe`、macOS では `~/Library/Application Support/Tern/omp/bin/omp`) を使用し、見つからない場合は `PATH` 上の `omp` にフォールバックします。Tern のデーモンが見つけられない場合は、`OMP_USAGE_BIN` にフルパスを設定してください。
 
 ### AI エージェントでインストールする
 

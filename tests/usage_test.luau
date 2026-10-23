@@ -5,6 +5,7 @@ local now_ms = os.time() * 1000
 local DAY = 86400 * 1000
 
 local replies: { [string]: any } = {}
+local spawn_fails = false
 
 local function reply(argv: { string }): string
 	return table.concat(argv, " ", 2)
@@ -22,6 +23,9 @@ local fake = {
 	},
 	process = {
 		run = function(argv: { string }, opts, done)
+			if spawn_fails then
+				error("tern.process.run omp: No such file or directory (os error 2)")
+			end
 			local cb = if type(opts) == "function" then opts else done
 			cb({ status = 0, stdout = reply(argv) })
 		end,
@@ -85,6 +89,22 @@ local function expect(cond: boolean, msg: string, text: string)
 		error(msg .. "\n  bar: " .. text, 2)
 	end
 end
+
+-- omp missing: tern.process.run raises instead of calling back; the bar must show '?' and stay retryable.
+spawn_fails = true
+usage.fetch(true)
+usage.fetch_today()
+local failed_out = {}
+usage.segments(failed_out)
+local failed_texts = {}
+for _, s in failed_out do
+	table.insert(failed_texts, s.text)
+end
+local failed_text = table.concat(failed_texts, " ")
+expect(failed_text:find("✻ Claude ?", 1, true) ~= nil, "Claude should show '?' when omp can't start", failed_text)
+expect(failed_text:find("⬢ Codex ?", 1, true) ~= nil, "Codex should show '?' when omp can't start", failed_text)
+expect(failed_text:find("⟳ …", 1, true) == nil, "a failed spawn must not leave the bar busy", failed_text)
+spawn_fails = false
 
 -- The 7d window starting right now leaves at most one weekday unlocked (20%), so 0% used is never over budget.
 local text, cmd = render(claude(0.4, 0, now_ms + 7 * DAY))
