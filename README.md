@@ -24,6 +24,7 @@ Everything stays in the status line, so the answers are on screen while you work
 - **Can I afford a heavy run today?** A work-week budget: each weekday unlocks 20% of the weekly quota, and a holiday's share carries over.
 - **What did today cost?** Tokens and API-price cost since midnight, across every provider omp tracks.
 - **Do I have a reset saved?** Saved usage-limit resets for Claude and Codex.
+- **When do I run out?** At the current pace, how long until the 5h or weekly window locks, when that comes before its reset. A toast when a window hits 80%, locks or frees up again.
 - **Claude and Codex side by side**, both read through omp, with nothing new to sign in to.
 
 ## What each part means
@@ -32,6 +33,7 @@ Everything stays in the status line, so the answers are on screen while you work
 |---|---|
 | <img src="assets/seg-window.png" height="28" alt="5h window"> | Usage of one window: 5h, week (`wk`), and Fable when your plan has it. Each dot keeps its own color, green to red, and the percentage takes the color of the last dot reached. At 80% (you can change this) the percentage turns into a pulsing red badge. |
 | <img src="assets/seg-reset.png" height="28" alt="reset countdown"> | Time until the Claude 5h window resets. Turns green when it is under 30 min and the 5h window is at 80% or more, meaning relief is close. |
+| `⏳23m` | Right after the Claude 5h or `wk` bar: at the average pace since that window opened, it runs out in this long, before its reset. Shows from 50% used. Alerts come as toasts: a window reaching the red-badge threshold, locking, or freeing up again. |
 | <img src="assets/seg-credits.png" height="28" alt="saved resets"> | Usage-limit resets you have saved. |
 | <img src="assets/seg-budget.png" height="28" alt="work-week budget"> | Work-week budget. Each work day (Monday to Friday unless you change it) of the current 7-day window unlocks an equal share of the weekly quota, 20% with five days. `left` is quota unlocked and not spent yet. `over` (pulsing red) means you are spending ahead of the week. |
 | <img src="assets/seg-codex.png" height="28" alt="Codex"> | Codex. `×2` is the number of linked accounts, and the windows show the share of accounts used up. |
@@ -111,7 +113,7 @@ Open the command palette and type `OMP usage`. Settings are kept in the plugin's
 
 | Command | Does |
 |---|---|
-| **OMP usage: show or hide a part…** | Type a part to turn it on or off: `claude`, `codex`, `today`, `cost`, `budget`, `reset`, `credits`, `fable`, `updates`. |
+| **OMP usage: show or hide a part…** | Type a part to turn it on or off: `claude`, `codex`, `today`, `cost`, `budget`, `reset`, `credits`, `fable`, `forecast` (the `⏳`), `alerts` (the toasts), `updates`. |
 | **OMP usage: language…** | `en`, `pt-BR`, `es`, `zh-CN` or `ja`. |
 | **OMP usage: work days per week…** | How many days, counted from Monday, unlock the weekly quota. The default `5` means Monday to Friday, 20% each. |
 | **OMP usage: red badge threshold…** | The percentage where a window becomes the pulsing red badge (default 80). |

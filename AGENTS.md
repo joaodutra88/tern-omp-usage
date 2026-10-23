@@ -8,7 +8,7 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 |---|---|
 | `plugin.toml` | Manifest. `id = "omp-usage"`; every command and CSS hook is prefixed `plugin.omp-usage.` |
 | `window.luau` | Entry point: finds `omp`, timers, the refresh command, the CSS, the status formatter, the optional `extras.luau` hook. |
-| `usage.luau` | Everything about usage: runs `omp`, parses its JSON, builds the segments. |
+| `usage.luau` | Everything about usage: runs `omp`, parses its JSON, builds the segments, the `⏳` forecast and the threshold/lock/free toasts. |
 | `config.luau` | Settings in `tern.kv` (parts shown, language, work days, red-badge threshold) and the palette commands that change them. |
 | `labels.luau` | Every word the plugin shows, one table per language. |
 | `update.luau` | Daily GitHub release check, the `⬆` segment and its toast, the one-click reinstall, the toast after an update. |
