@@ -8,8 +8,10 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 |---|---|
 | `plugin.toml` | Manifest. `id = "omp-usage"`; every command and CSS hook is prefixed `plugin.omp-usage.` |
 | `window.luau` | Entry point: finds `omp`, timers, the refresh command, the CSS, the status formatter, the optional `extras.luau` hook. |
-| `usage.luau` | Everything about usage: runs `omp`, parses its JSON, builds the segments, holds the labels. |
-| `tests/usage_test.luau` | Runs `usage.luau` against a fake `tern` with canned `omp` replies and checks the bar text. |
+| `usage.luau` | Everything about usage: runs `omp`, parses its JSON, builds the segments. |
+| `config.luau` | Settings in `tern.kv` (parts shown, language, work days, red-badge threshold) and the palette commands that change them. |
+| `labels.luau` | Every word the plugin shows, one table per language. |
+| `tests/usage_test.luau` | Runs `usage.luau` and `config.luau` against a fake `tern` with canned `omp` replies and checks the bar text. |
 | `scripts/check.py` | The gate. CI runs it; run it yourself before proposing a change. |
 
 ## Rules that are easy to break
@@ -18,12 +20,13 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 - **Tern's CSS is a subset.** `text-shadow`, `margin-block` and friends are rejected (the check catches them). Style a segment by its title: `#statusline .sl-plugin[title="plugin.omp-usage.<command>"]`, which is why every segment carries a `command` even when it only refreshes.
 - **UTF-8.** Strings sent to Tern must stay valid UTF-8. Cut text by characters (`utf8.offset`), never by bytes.
 - **Anthropic rate-limits** its usage endpoint below about 5 minutes. Don't poll faster than `FETCH_MS`.
-- **Text the user sees** lives in `M.labels` in `usage.luau`. Don't hard-code new words elsewhere.
+- **Text the user sees** lives in `labels.luau`. Add a key to `en` (and the other languages you can) instead of hard-coding words elsewhere.
+- **Settings are read outside the formatter.** `config.load()` reads `tern.kv` at load and on the minute tick; the formatter only reads the cached table.
 - **No credentials, no network.** The plugin only runs `omp`. Keep it that way; anything that needs a token belongs in `omp`, not here.
 
 ## What the user can configure
 
-`DAILY`, `TREND_STEP` and `M.labels` in `usage.luau`; `FETCH_MS` in `window.luau`; the `OMP_USAGE_BIN` environment variable for the `omp` path; personal segments in an untracked `extras.luau` (shape in the README). Point users there before suggesting a fork.
+The palette: `OMP usage: show or hide a part…`, `language…`, `work days per week…`, `red badge threshold…`, `reset settings` (stored in `tern.kv`, kept across updates). The `OMP_USAGE_BIN` environment variable for the `omp` path; personal segments in an untracked `extras.luau` (shape in the README). Point users there before suggesting a fork.
 
 ## Before you propose a change
 

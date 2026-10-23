@@ -5,6 +5,8 @@ Every version `plugin.toml` names has a section here. When that version reaches 
 ## Unreleased
 
 - A provider omp has no account for is hidden. Signed in to Claude only, the bar used to show a permanent `⬢ Codex ?` and `⚠`.
+- Settings from the palette (type `OMP usage`): show or hide each part, language (`en`, `pt-BR`, `es`, `zh-CN`, `ja`), work days per week and the red-badge threshold. They live in `tern.kv`, so an update keeps them.
+- Every word lives in `labels.luau`; a language that leaves a key out falls back to English.
 
 ## 0.3.1
 
