@@ -1,4 +1,5 @@
 -- Claude and Codex usage from omp in Tern's status line (usage.luau). See README.md.
+local config = require("./config")
 local usage = require("./usage")
 local FETCH_MS = 5 * 60 * 1000 -- Anthropic usage endpoint answers 429 below ~5 min
 local TICK_MS = 60 * 1000
@@ -52,13 +53,19 @@ tern.command({
 	end,
 })
 usage.init(OMP, hidden)
+config.load()
+config.commands()
 
 -- window_start doesn't fire again after `tern plugin reload`; a load-time timer covers both.
 tern.timer(0, function()
 	every(FETCH_MS, usage.fetch)
 	every(FETCH_MS, usage.fetch_today)
 	tern.timer(TICK_MS, function()
-		every(TICK_MS, tern.chrome.refresh) -- countdown moves without new data
+		-- The countdown moves without new data, and another window may have changed a setting.
+		every(TICK_MS, function()
+			config.load()
+			tern.chrome.refresh()
+		end)
 	end)
 end)
 

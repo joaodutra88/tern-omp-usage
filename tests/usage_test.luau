@@ -11,7 +11,17 @@ local function reply(argv: { string }): string
 	return table.concat(argv, " ", 2)
 end
 
+local store: { [string]: any } = {}
+
 local fake = {
+	kv = {
+		get = function(key: string)
+			return store[key]
+		end,
+		set = function(key: string, value: any)
+			store[key] = value
+		end,
+	},
 	timer = function(_ms: number, fn: () -> ())
 		fn()
 	end,
@@ -32,9 +42,13 @@ local fake = {
 	},
 }
 local usage = require("../usage")
--- Why: the luau CLI freezes _G; the module's own environment stays writable and is read at call time.
+local config = require("../config")
+-- Why: the luau CLI freezes _G; each module's own environment stays writable and is read at call time.
 local env: any = getfenv(usage.fetch)
 env.tern = fake
+local config_env: any = getfenv(config.load)
+config_env.tern = fake
+config.load()
 
 local function claude(five: number, week: number, week_reset: number, extra: { any }?)
 	local limits = {
@@ -138,9 +152,49 @@ expect(text:find("Codex", 1, true) == nil, "Codex should hide when omp has no Co
 expect(text:find("⚠", 1, true) == nil, "a provider without an account is not an error", text)
 expect(text:find("✻ Claude", 1, true) ~= nil, "Claude stays when only Codex has no account", text)
 
--- Labels are the translation point.
-usage.labels.left = "sobra"
+-- Settings: each answer is what the palette prompt receives.
+local function settle(answer: string, input: string): boolean
+	local ok = config.answer[answer](input)
+	return ok
+end
+
+expect(settle("language", "pt-br"), "language codes match case-insensitively", "")
 text = render(claude(0, 0, now_ms + 7 * DAY))
-expect(text:find("📅 sobra", 1, true) ~= nil, "labels should be overridable", text)
+expect(text:find("📅 sobra", 1, true) ~= nil, "pt-BR should show its own words", text)
+settle("language", "ja")
+text = render(claude(0, 0, now_ms + 7 * DAY))
+expect(text:find("📅 残り", 1, true) ~= nil, "ja should show its own words", text)
+expect(not settle("language", "klingon"), "an unknown language is refused", "")
+
+-- A reinstall keeps the data folder: loading the store again restores the language.
+config.load()
+text = render(claude(0, 0, now_ms + 7 * DAY))
+expect(text:find("📅 残り", 1, true) ~= nil, "settings should survive a fresh load from tern.kv", text)
+settle("language", "en")
+
+settle("part", "Codex")
+text = render(claude(0.4, 0, now_ms + 7 * DAY))
+expect(text:find("Codex", 1, true) == nil, "a hidden part leaves the bar", text)
+expect(text:find("✻ Claude", 1, true) ~= nil, "hiding Codex keeps Claude", text)
+settle("part", "codex")
+text = render(claude(0.4, 0, now_ms + 7 * DAY))
+expect(text:find("⬢ Codex", 1, true) ~= nil, "toggling again shows the part", text)
+expect(not settle("part", "weather"), "an unknown part is refused", "")
+
+-- Window started two days ago: three days so far; with all 7 days counting, 3/7 of the quota is unlocked.
+settle("workdays", "7")
+text = render(claude(0, 0, now_ms + 5 * DAY))
+expect(text:find("📅 left 43%", 1, true) ~= nil, "7 work days unlock 1/7 per day", text)
+expect(not settle("workdays", "8"), "more than 7 work days is refused", "")
+
+settle("crit", "60%")
+text, cmd = render(claude(0.65, 0, now_ms + 7 * DAY))
+expect(cmd["plugin.omp-usage.pct-crit"] == true, "65% is critical with the threshold at 60%", text)
+expect(not settle("crit", "20"), "a threshold under 50% is refused", "")
+
+config.reset()
+text, cmd = render(claude(0.65, 0, now_ms + 7 * DAY))
+expect(cmd["plugin.omp-usage.pct-crit"] == nil, "reset brings the threshold back to 80%", text)
+expect(store.settings ~= nil and next(store.settings) == nil, "reset leaves an empty store", "")
 
 print("usage_test: ok")

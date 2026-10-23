@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN_ID = "omp-usage"
-LUAU_FILES = ["window.luau", "usage.luau", "tests/usage_test.luau"]
+LUAU_FILES = ["window.luau", "usage.luau", "config.luau", "labels.luau", "tests/usage_test.luau"]
 # Tern's CSS engine rejects these and logs a style sheet error.
 BAD_CSS = ["text-shadow", "margin-block", "margin-inline", "padding-block", "padding-inline"]
 
