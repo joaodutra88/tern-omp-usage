@@ -6,10 +6,12 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 
 | File | What lives there |
 |---|---|
-| `plugin.toml` | Manifest. `id = "omp-usage"`; every command and CSS hook is prefixed `plugin.omp-usage.` |
-| `window.luau` | Entry point: finds `omp`, timers, the refresh command, the CSS, the status formatter, the optional `extras.luau` hook. |
+| `plugin.toml` | Manifest. `id = "omp-usage"`; every command and CSS hook is prefixed `plugin.omp-usage.`; one block, `dashboard`. |
+| `window.luau` | Entry point: timers, the refresh and dashboard commands, the CSS, the status formatter, the optional `extras.luau` hook. |
+| `host.luau` | Host half: the `dashboard` block (runs `omp usage --history`, draws the cards, `r` refreshes). |
+| `history.luau` | The dashboard's data, with no `tern` calls: hourly series per limit and the cost of today, 7 days and the month. |
 | `usage.luau` | Everything about usage: runs `omp`, parses its JSON, builds the segments, the `⏳` forecast and the threshold/lock/free toasts. |
-| `config.luau` | Settings in `tern.kv` (parts shown, language, work days, red-badge threshold) and the palette commands that change them. |
+| `config.luau` | Finds `omp` (`OMP_USAGE_BIN`, then the copy Tern manages, then `PATH`); settings in `tern.kv` (parts shown, language, work days, red-badge threshold) and the palette commands that change them. |
 | `labels.luau` | Every word the plugin shows, one table per language. |
 | `update.luau` | Daily GitHub release check, the `⬆` segment and its toast, the one-click reinstall, the toast after an update. |
 | `tests/*_test.luau` | Run the modules against a fake `tern` (canned `omp` replies, a canned GitHub answer) and check what the bar and the toasts say. |
