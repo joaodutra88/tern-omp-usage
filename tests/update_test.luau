@@ -8,6 +8,7 @@ local fetches = 0
 local release: any = { tag_name = "v0.5.0", html_url = "https://github.com/joaodutra88/tern-omp-usage/releases/tag/v0.5.0" }
 local status = 200
 local ran: { string }? = nil
+local ran_opts: { [string]: any }? = nil
 local install_result = { status = 0, stdout = "", stderr = "" }
 
 local fake = {
@@ -43,8 +44,9 @@ local fake = {
 		end,
 	},
 	process = {
-		run = function(argv: { string }, _opts, done)
+		run = function(argv: { string }, opts, done)
 			ran = argv
+			ran_opts = opts
 			done(install_result, nil)
 		end,
 	},
@@ -135,6 +137,8 @@ update.install(cx)
 expect(files["DATA/extras.luau"] == "return {}", "extras.luau is copied to the data folder before installing")
 expect(ran ~= nil and ran[2] == "plugin" and ran[3] == "install" and ran[5] == "--force", "the update reinstalls with --force")
 expect(ran ~= nil and ran[4] == "https://github.com/joaodutra88/tern-omp-usage", "from the repository")
+-- Windows refuses to replace a folder a process runs in, and the default cwd is the plugin's own folder.
+expect(ran_opts ~= nil and ran_opts.cwd == "DATA", "the reinstall runs outside the plugin folder")
 
 install_result = { status = 1, stdout = "", stderr = "omp-usage is linked (C:\\src\\tern-omp-usage); use unlink first\n" }
 update.install(cx)

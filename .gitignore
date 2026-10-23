@@ -1,3 +1,5 @@
 # Personal segments loaded by window.luau when present.
 extras.luau
 notify.ps1
+# Written by scripts/check.py --integration.
+tests/integration/sources.luau

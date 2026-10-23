@@ -1,26 +1,58 @@
 name: check
 
+# Pull request: unit (syntax, unit tests, CSS, manifest, changelog), then integration (the whole plugin in a fake
+# Tern with recorded omp and GitHub answers) on Linux, Windows and macOS. Branch protection requires both before a
+# merge. Push to main: the same, then a release when plugin.toml names a version that has none yet.
 on:
   push:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  LUAU_VERSION: "0.743"
+
 jobs:
-  check:
+  unit:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Install Luau CLI
-        run: |
-          curl -sSL -o luau.zip https://github.com/luau-lang/luau/releases/latest/download/luau-ubuntu.zip
-          mkdir -p "$RUNNER_TEMP/luau" && unzip -q luau.zip -d "$RUNNER_TEMP/luau"
-          chmod +x "$RUNNER_TEMP/luau/"*
-          echo "LUAU_DIR=$RUNNER_TEMP/luau" >> "$GITHUB_ENV"
-      - run: python3 scripts/check.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/luau
+        with:
+          version: ${{ env.LUAU_VERSION }}
+      - run: python scripts/check.py
+
+  integration:
+    needs: unit
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: ./.github/actions/luau
+        with:
+          version: ${{ env.LUAU_VERSION }}
+      - run: python scripts/check.py --integration
 
   # A version in plugin.toml without a release yet becomes one, its notes taken from CHANGELOG.md.
   release:
-    needs: check
+    needs: [unit, integration]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:

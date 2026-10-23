@@ -168,7 +168,7 @@ They come from the same usage endpoint through omp, every 5 minutes, because Ant
 It includes cache reads, which make up most of an agent's input. The cost is what those tokens would cost at API prices, not what your subscription charges.
 
 **How do I update?**
-Click the blue `⬆` when it shows, or run **OMP usage: update to the latest version**. By hand: `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`. Versions before 0.4.0 have no update check, so update those once by hand.
+Click the blue `⬆` when it shows, or run **OMP usage: update to the latest version**. By hand: `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`. Versions before 0.4.0 have no update check, and on Windows the 0.4.0 update fails with "The process cannot access the file", so update those once by hand.
 
 **How do I uninstall it?**
 `tern plugin remove omp-usage`.
@@ -177,7 +177,7 @@ Click the blue `⬆` when it shows, or run **OMP usage: update to the latest ver
 
 This is open source under MIT: use it, fork it, change it, ship it. Issues and pull requests are open to everyone.
 
-- `python scripts/check.py` validates syntax, tests, CSS and the manifest. CI runs the same thing. Add `--tern` to also reload the plugin in your Tern and read its log.
+- `python scripts/check.py` runs the syntax check, the unit tests, the CSS and manifest checks; `--integration` runs the whole plugin in a fake Tern with recorded `omp` and GitHub answers. CI runs both on every pull request, on Linux, Windows and macOS. Add `--tern` to also reload the plugin in your Tern and read its log.
 - Using an AI agent? Point it at [AGENTS.md](AGENTS.md). It explains the rules that are easy to break and how to file a clean bug report for you.
 - What's planned, and what a change has to respect: [ROADMAP.md](ROADMAP.md). Ideas go to [Discussions](https://github.com/joaodutra88/tern-omp-usage/discussions); issues marked **good first issue** are a good start.
 - More in [CONTRIBUTING.md](CONTRIBUTING.md). Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md).

@@ -170,7 +170,7 @@ Tern 会禁用出错的插件，或状态格式化器超出时间预算的插件
 其中包含缓存读取，它们占了智能体输入的大部分。费用是这些 token 按 API 价格计算的结果，而不是你的订阅实际收取的金额。
 
 **如何更新？**
-出现蓝色 `⬆` 时点击它，或运行 **OMP usage: update to the latest version**。手动更新：`tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`。0.4.0 之前的版本没有更新检查，因此需要手动更新一次。
+出现蓝色 `⬆` 时点击它，或运行 **OMP usage: update to the latest version**。手动更新：`tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`。0.4.0 之前的版本没有更新检查，而在 Windows 上 0.4.0 的更新会报错 "The process cannot access the file"，因此这些版本需要手动更新一次。
 
 **如何卸载？**
 `tern plugin remove omp-usage`。
@@ -179,7 +179,7 @@ Tern 会禁用出错的插件，或状态格式化器超出时间预算的插件
 
 本项目采用 MIT 开源许可：可以使用、分叉、修改、发布。任何人都可以提交 Issue 和 Pull Request。
 
-- `python scripts/check.py` 会验证语法、测试、CSS 和 manifest。CI 运行的也是同样的内容。添加 `--tern` 还会在你的 Tern 中重新加载插件并读取其日志。
+- `python scripts/check.py` 会运行语法检查、单元测试以及 CSS 和 manifest 检查；`--integration` 会在模拟的 Tern 中运行整个插件，使用录制好的 `omp` 和 GitHub 响应。CI 会在每个 pull request 上于 Linux、Windows 和 macOS 运行这两项。添加 `--tern` 还会在你的 Tern 中重新加载插件并读取其日志。
 - 使用 AI 代理？请让它参考 [AGENTS.md](AGENTS.md)。其中说明了容易出错的规则，以及如何为你提交规范的 Bug 报告。
 - 计划中的内容，以及改动需要遵守的规则：[ROADMAP.md](ROADMAP.md)（英文）。想法请发到 [Discussions](https://github.com/joaodutra88/tern-omp-usage/discussions)；标记为 **good first issue** 的 issue 适合入手。
 - 更多内容见 [CONTRIBUTING.md](CONTRIBUTING.md)。参与者需遵守 [行为准则](CODE_OF_CONDUCT.md)；安全问题请通过 [SECURITY.md](SECURITY.md) 上报。

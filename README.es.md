@@ -170,7 +170,7 @@ Vienen del mismo endpoint de uso a través de omp, cada 5 minutos, porque Anthro
 Incluye las lecturas de caché, que son la mayor parte de la entrada de un agente. El costo es lo que esos tokens costarían a precio de API, no lo que cobra tu suscripción.
 
 **¿Cómo lo actualizo?**
-Haz clic en el `⬆` azul cuando aparezca, o ejecuta **OMP usage: update to the latest version**. A mano: `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`. Las versiones anteriores a la 0.4.0 no revisan actualizaciones, así que actualízalas una vez a mano.
+Haz clic en el `⬆` azul cuando aparezca, o ejecuta **OMP usage: update to the latest version**. A mano: `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force`. Las versiones anteriores a la 0.4.0 no revisan actualizaciones, y en Windows la actualización de la 0.4.0 falla con "The process cannot access the file", así que actualízalas una vez a mano.
 
 **¿Cómo lo desinstalo?**
 `tern plugin remove omp-usage`.
@@ -179,7 +179,7 @@ Haz clic en el `⬆` azul cuando aparezca, o ejecuta **OMP usage: update to the 
 
 Es código abierto bajo MIT: úsalo, haz un fork, cámbialo, publícalo. Los issues y los pull requests están abiertos para todos.
 
-- `python scripts/check.py` valida la sintaxis, las pruebas, el CSS y el manifiesto. CI ejecuta lo mismo. Añade `--tern` para además recargar el plugin en tu Tern y leer su log.
+- `python scripts/check.py` ejecuta la revisión de sintaxis, las pruebas unitarias y las revisiones de CSS y del manifiesto; `--integration` ejecuta el plugin completo en un Tern simulado, con respuestas grabadas de `omp` y de GitHub. CI ejecuta ambas en cada pull request, en Linux, Windows y macOS. Añade `--tern` para además recargar el plugin en tu Tern y leer su log.
 - ¿Usas un agente de IA? Apúntalo a [AGENTS.md](AGENTS.md). Explica las reglas que se rompen fácilmente y cómo presentar un reporte de bug limpio para ti.
 - Lo que está planeado, y lo que un cambio tiene que respetar: [ROADMAP.md](ROADMAP.md) (en inglés). Las ideas van a [Discussions](https://github.com/joaodutra88/tern-omp-usage/discussions); los issues marcados como **good first issue** son un buen punto de partida.
 - Más en [CONTRIBUTING.md](CONTRIBUTING.md). Todos los participantes siguen el [Código de conducta](CODE_OF_CONDUCT.md); los problemas de seguridad se tratan según [SECURITY.md](SECURITY.md).

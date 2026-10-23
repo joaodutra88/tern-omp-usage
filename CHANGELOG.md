@@ -2,6 +2,14 @@
 
 Every version `plugin.toml` names has a section here. When that version reaches `main`, CI publishes the section as the GitHub release, and installed copies of the plugin show it.
 
+## 0.4.1
+
+**On Windows with 0.4.0:** the update button fails with "The process cannot access the file". Run `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force` once; from 0.4.1 on the button works.
+
+- The one-click update works on Windows. The install ran inside the plugin's own folder, which Windows won't let it replace; it now runs from the data folder.
+- The bar no longer freezes after a fresh install or a reload. The first timer started four processes at once and went over Tern's 50 ms, so Tern turned off every timer of the plugin. Now each callback starts one at most: Codex after Claude, today's cost and the release check a moment later.
+- CI: every pull request runs the unit tests, then an integration round on Linux, Windows and macOS that loads the whole plugin in a fake Tern with recorded `omp` and GitHub answers. It checks Tern's time budgets, the update (with Windows' folder lock), the settings and `extras.luau` surviving it, the alerts and the dashboard. A release is published only after both pass.
+
 ## 0.4.0
 
 **Upgrading from 0.3.x:** run `tern plugin install https://github.com/joaodutra88/tern-omp-usage --force` once. From this version on the plugin tells you about new releases and updates itself with one click.
