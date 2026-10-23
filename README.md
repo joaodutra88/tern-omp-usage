@@ -84,6 +84,10 @@ Once a day the plugin checks GitHub for a newer release. When there is one, a bl
 
 A linked checkout (`tern plugin link`) updates with `git pull` instead. To stop checking, hide the `updates` part (see [Configuration](#configuration)) or set `OMP_USAGE_NO_UPDATE_CHECK=1`.
 
+**On 0.3.x?** Those versions have no update check. Run the install command above once with `--force`, and from 0.4.0 on the plugin tells you itself.
+
+To hear about releases by e-mail too, use **Watch → Custom → Releases** at the top of this repository.
+
 ### Install with your AI agent
 
 Paste this into omp, Claude Code, Codex or any agent that can run commands:
@@ -175,6 +179,7 @@ This is open source under MIT: use it, fork it, change it, ship it. Issues and p
 
 - `python scripts/check.py` validates syntax, tests, CSS and the manifest. CI runs the same thing. Add `--tern` to also reload the plugin in your Tern and read its log.
 - Using an AI agent? Point it at [AGENTS.md](AGENTS.md). It explains the rules that are easy to break and how to file a clean bug report for you.
+- What's planned, and what a change has to respect: [ROADMAP.md](ROADMAP.md). Ideas go to [Discussions](https://github.com/joaodutra88/tern-omp-usage/discussions); issues marked **good first issue** are a good start.
 - More in [CONTRIBUTING.md](CONTRIBUTING.md). Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md); security problems go through [SECURITY.md](SECURITY.md).
 
 ## Star history
