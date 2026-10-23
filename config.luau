@@ -14,6 +14,8 @@ M.PARTS = {
 	credits = true,
 	fable = true,
 	updates = true,
+	alerts = true,
+	forecast = true,
 }
 M.LANGUAGES = { "en", "pt-BR", "es", "zh-CN", "ja" }
 
