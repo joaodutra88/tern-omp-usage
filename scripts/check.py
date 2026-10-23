@@ -15,11 +15,12 @@ import shutil
 import subprocess
 import sys
 import time
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 PLUGIN_ID = "omp-usage"
-LUAU_FILES = ["window.luau", "usage.luau", "config.luau", "labels.luau", "update.luau"]
+LUAU_FILES = ["window.luau", "host.luau", "usage.luau", "config.luau", "labels.luau", "update.luau", "history.luau"]
 TESTS = sorted(str(p.relative_to(ROOT).as_posix()) for p in (ROOT / "tests").glob("*_test.luau"))
 # Tern's CSS engine rejects these and logs a style sheet error.
 BAD_CSS = ["text-shadow", "margin-block", "margin-inline", "padding-block", "padding-inline"]
@@ -48,13 +49,13 @@ def run(argv: list[str], **kw) -> subprocess.CompletedProcess:
 
 
 def check_manifest() -> None:
-    text = (ROOT / "plugin.toml").read_text(encoding="utf-8")
-    fields = dict(re.findall(r'^(\w+)\s*=\s*"?([^"\n]*)"?\s*$', text, re.M))
+    fields = tomllib.loads((ROOT / "plugin.toml").read_text(encoding="utf-8"))
     missing = [k for k in ("schema", "id", "name", "version", "window") if k not in fields]
     step("plugin.toml has schema, id, name, version, window", not missing, f"missing: {missing}")
     step(f"plugin.toml id is {PLUGIN_ID}", fields.get("id") == PLUGIN_ID, f"id = {fields.get('id')}")
-    window = fields.get("window", "")
-    step("plugin.toml window file exists", bool(window) and (ROOT / window).exists(), f"window = {window}")
+    for half in ("window", "host"):
+        entry = fields.get(half, "")
+        step(f"plugin.toml {half} file exists", bool(entry) and (ROOT / entry).exists(), f"{half} = {entry}")
 
 
 def check_changelog() -> None:

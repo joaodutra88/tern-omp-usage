@@ -30,6 +30,30 @@ end
 local saved: { [string]: any } = {}
 M.labels = LABELS.en
 
+-- Tern's app and daemon may not inherit the shell PATH, so prefer the omp that Tern itself manages.
+local function managed_omp(): string?
+	local paths: { string } = {}
+	local local_app = tern.getenv("LOCALAPPDATA")
+	if local_app then
+		table.insert(paths, local_app .. "\\Tern\\omp\\bin\\omp.exe")
+	end
+	local home = tern.getenv("HOME")
+	if home then
+		table.insert(paths, home .. "/Library/Application Support/Tern/omp/bin/omp")
+		table.insert(paths, (tern.getenv("XDG_DATA_HOME") or home .. "/.local/share") .. "/Tern/omp/bin/omp")
+	end
+	for _, p in paths do
+		if tern.fs.exists(p) then
+			return p
+		end
+	end
+	return nil
+end
+
+function M.omp_bin(): string
+	return tern.getenv("OMP_USAGE_BIN") or managed_omp() or "omp"
+end
+
 function M.get(key: string): any
 	local v = saved[key]
 	return if v == nil then DEFAULTS[key] else v
