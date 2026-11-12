@@ -2,6 +2,10 @@
 
 Every version `plugin.toml` names has a section here. When that version reaches `main`, CI publishes the section as the GitHub release, and installed copies of the plugin show it.
 
+## 0.6.1
+
+- The provider's icon shows on the 5h widget only: wk and Fable, placed beside it, no longer repeat it (Codex wk too).
+
 ## 0.6.0
 
 - Hovering a widget opens a card instead of a line of text: Tern's own hover card, one row per detail, sized to fit in every language.
