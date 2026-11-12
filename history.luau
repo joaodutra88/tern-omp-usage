@@ -140,4 +140,15 @@ function M.costs(days: { [string]: any }, now: number): { today: number, week: n
 	return r
 end
 
+-- Tokens since Monday (local), today included, from the same `days`.
+function M.week_tokens(days: { [string]: any }, now: number): number
+	local since_monday = ((os.date("*t", now) :: any).wday + 5) % 7 -- Monday 0 … Sunday 6
+	local total = 0
+	for i = 0, since_monday do
+		local d = days[os.date("%Y-%m-%d", now - i * 86400) :: string]
+		total += if type(d) == "table" and type(d.tokens) == "number" then d.tokens else 0
+	end
+	return total
+end
+
 return M

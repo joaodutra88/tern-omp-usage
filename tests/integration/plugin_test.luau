@@ -21,11 +21,11 @@ do
 	local text = w:bar()
 	expect(w.spawned[1].argv[1] == H.OMP, "the omp that Tern manages is the one that runs", w.spawned[1].argv[1])
 	expect(has(text, "11%") and has(text, "20%"), "Claude 5h and week from the recorded answer", text)
-	expect(w:widget("codex-5h") and has(w:widget("codex-5h").title, "2 accounts"), "Codex with its two accounts", text)
+	expect(w:widget("codex-5h") and has(w:widget("codex-5h").title, "Accounts: 2"), "Codex with its two accounts", text)
 	expect(has(text, "$12"), "today's cost leaves out yesterday's bucket", text)
 	expect(not has(text, "⬆"), "no update badge", text)
 	local health = w:widget("health")
-	expect(health and has(health.text, "Codex off") and has(health.title, "oauth refresh failed: 401"), "the login omp turned off shows", text)
+	expect(health and has(health.text, "Codex off") and has(health.title, "Codex: login off\noauth refresh failed · 401"), "the login omp turned off shows", health and health.title)
 	expect(not has(health.title, "@"), "without the account's e-mail", health.title)
 	expect(#w.toasts == 0, "a first install shows no toast", w:toast_texts())
 	local today = os.date("%Y-%m-%d") :: string

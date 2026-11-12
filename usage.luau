@@ -87,19 +87,26 @@ local function budget(used: number?, resets: number?): { slack: number, allowed:
 	return { slack = allowed - used, allowed = allowed, days = days }
 end
 
--- Minutes until the window runs out at its average pace since it opened, when that comes before its reset.
--- ponytail: linear pace, so a burst early in the window overstates it; nothing shows under 50% used.
-local function runs_out(f: number?, reset_ms: number?, span_s: number): number?
-	if not f or not reset_ms or f < 0.5 or f >= 1 then
+-- Minutes until the window is used up at its average pace since it opened; nil in its first 10 minutes, at 0% or full.
+-- ponytail: linear pace, so a burst early in the window overstates it.
+local function pace_left(f: number?, reset_ms: number?, span_s: number): number?
+	if not f or not reset_ms or f <= 0 or f >= 1 then
 		return nil
 	end
-	local now = os.time()
-	local elapsed = now - (reset_ms / 1000 - span_s)
+	local elapsed = os.time() - (reset_ms / 1000 - span_s)
 	if elapsed < 600 then
 		return nil
 	end
-	local left = (1 - f) * elapsed / f
-	return if now + left < reset_ms / 1000 then math.floor(left / 60) else nil
+	return math.floor((1 - f) * elapsed / f / 60)
+end
+
+-- The forecast widget's minutes: when the window runs out at that pace before its reset; nothing under 50% used.
+local function runs_out(f: number?, reset_ms: number?, span_s: number): number?
+	if not f or f < 0.5 then
+		return nil
+	end
+	local left, mins = pace_left(f, reset_ms, span_s), mins_until(reset_ms)
+	return if left and mins and left < mins then left else nil
 end
 
 -- "2026-12-10T22:00:00.000Z" → epoch seconds; Luau's os.time reads a table as UTC.
@@ -410,13 +417,16 @@ function M.fetch_today()
 				t.cost_by_hour[i] += cost
 			end
 		end
-		local c = history.costs(record_day(t.tokens, t.cost), os.time())
+		local now = os.time()
+		local days = record_day(t.tokens, t.cost)
+		local c = history.costs(days, now)
 		today = {
 			tokens = t.tokens,
 			cost = t.cost,
 			requests = t.requests,
 			week = c.week,
 			month = c.month,
+			since_monday = history.week_tokens(days, now),
 			tokens_series = running(t.by_hour),
 			cost_series = running(t.cost_by_hour),
 		}
@@ -449,7 +459,7 @@ local PROVIDER = {
 local LIMITS = {
 	{ id = "claude-5h", provider = "claude", window = "5h", field = "five", key = "c5", span_s = 5 * 3600 },
 	{ id = "claude-week", provider = "claude", window = "wk", field = "week", key = "cwk", span_s = 7 * 86400 },
-	{ id = "claude-fable", provider = "claude", window = "Fable", field = "fable", key = "cf" },
+	{ id = "claude-fable", provider = "claude", window = "Fable", field = "fable", key = "cf", span_s = 7 * 86400 },
 	{ id = "codex-5h", provider = "codex", window = "5h", field = "five", key = "x5" },
 	{ id = "codex-week", provider = "codex", window = "wk", field = "week", key = "xwk" },
 }
@@ -480,15 +490,27 @@ local function dots(id: string, window: string, f: number, up: boolean): (string
 		)
 end
 
+-- A hover card: Tern draws each `Key: value` line of a widget's title as a row, the value right-aligned in mono, and
+-- any other line as text cut with an ellipsis. The card is about 270 px wide inside, so keys and values stay short;
+-- usage_test checks every card fits, in every language.
+local function card(rows: { any }): string
+	local lines = {}
+	for _, r in rows do
+		table.insert(lines, if type(r) == "table" then r[1] .. ": " .. r[2] else r)
+	end
+	return table.concat(lines, "\n")
+end
+
 -- One limit widget and the CSS rule that paints it: the dots, ↑ when rising, LOCKED and the time to its reset at
--- 100%, '?' when omp failed; the tooltip adds the reset, the forecast and the trend.
+-- 100%, '?' when omp failed. Its card: share used, reset, and with a window span the pace since it opened, against
+-- the reset.
 local function limit_view(l: { [string]: any }): (View?, string?)
 	local L = config.labels
 	local who = PROVIDER[l.provider]
 	local p = if l.provider == "claude" then claude else codex
 	if not p then
 		if failed[l.provider] and l.field ~= "fable" then
-			return { text = l.window .. " ?", tone = "error", icon = who.icon, title = string.format(L.tip_failed, who.name), command = REFRESH }, nil
+			return { text = l.window .. " ?", tone = "error", icon = who.icon, title = card({ { who.name, L.failed }, L.click_retry }), command = REFRESH }, nil
 		end
 		return nil, nil
 	end
@@ -497,21 +519,24 @@ local function limit_view(l: { [string]: any }): (View?, string?)
 		return nil, nil
 	end
 	local mins = mins_until(reset_ms)
-	local tip = { string.format(L.tip_used, who.name, l.window, pct(f)) }
+	local rows: { any } = { { L.k_used, pct(f) .. "%" } }
 	if mins then
-		table.insert(tip, string.format(L.resets_in, hm(mins)))
+		table.insert(rows, { if f >= 1 then L.k_frees else L.k_resets, hm(mins) })
 	end
-	local out = l.span_s and runs_out(f, reset_ms, l.span_s)
-	if out then
-		table.insert(tip, string.format(L.tip_runs_out, hm(out)))
+	local left = l.span_s and pace_left(f, reset_ms, l.span_s)
+	if left then
+		table.insert(rows, { L.k_pace, hm(left) })
+		if mins then
+			table.insert(rows, if left < mins then string.format(L.pace_bad, hm(mins - left)) else L.pace_ok)
+		end
 	end
 	if rising[l.key] then
-		table.insert(tip, L.tip_rising)
+		table.insert(rows, L.tip_rising)
 	end
 	if l.provider == "codex" and p.n then
-		table.insert(tip, string.format(L.tip_accounts, p.n))
+		table.insert(rows, { L.k_accounts, tostring(p.n) })
 	end
-	local view: View = { text = "", icon = who.icon, title = table.concat(tip, " · "), command = REFRESH }
+	local view: View = { text = "", icon = who.icon, title = card(rows), command = REFRESH }
 	if f >= 1 then
 		view.text = string.format("%s %s%s", l.window, L.locked, if mins then " " .. hm(mins) else "")
 		view.tone = "error"
@@ -590,7 +615,11 @@ local function specs(): { Spec }
 					text = string.format("📅 %s %d%%", if b.slack >= 0 then L2.left else L2.over, pct(math.abs(b.slack))),
 					value = if b.allowed > 0 then math.clamp(c.week / b.allowed, 0, 1) else 1,
 					tone = if b.slack >= 0 then "ok" else "error",
-					title = string.format(L2.tip_budget, pct(c.week), b.days, config.get("workdays"), pct(b.allowed)),
+					title = card({
+						{ L2.k_week_used, pct(c.week) .. "%" },
+						{ L2.k_unlocked, pct(b.allowed) .. "%" },
+						{ L2.k_workdays, string.format(L2.k_of, b.days, config.get("workdays")) },
+					}),
 					command = DASHBOARD,
 				}
 			end,
@@ -617,11 +646,14 @@ local function specs(): { Spec }
 				end
 				local L2 = config.labels
 				local left = mins_until(reset)
-				local title = "Claude " .. window .. ": " .. string.format(L2.tip_runs_out, hm(mins))
+				local rows: { any } = { { L2.k_window, "Claude " .. window }, { L2.k_runs_out, hm(mins) } }
+				if left then
+					table.insert(rows, { L2.k_resets, hm(left) })
+				end
 				return {
 					text = "⏳ " .. window .. " " .. hm(mins),
 					tone = "warn",
-					title = if left then title .. " · " .. string.format(L2.resets_in, hm(left)) else title,
+					title = card(rows),
 					command = REFRESH,
 				}
 			end,
@@ -640,9 +672,9 @@ local function specs(): { Spec }
 						saved += p.credits.saved
 						usable += p.credits.usable
 						for _, c in p.credits.list do
-							local state = if c.usable then L2.usable_now else L2.usable_later
+							local state = if c.usable then L2.now_short else L2.later_short
 							local expires = if c.expires then string.sub(c.expires, 1, 10) else "?"
-							table.insert(tip, string.format(L2.tip_credit, pair[1], state, windows(c.clears), expires))
+							table.insert(tip, { pair[1] .. " " .. windows(c.clears), state .. " · " .. expires })
 						end
 					end
 				end
@@ -652,7 +684,7 @@ local function specs(): { Spec }
 				return {
 					text = if usable == saved then "✦ " .. saved else string.format("✦ %d/%d", usable, saved),
 					tone = if usable > 0 then "accent" else "muted",
-					title = table.concat(tip, "; "),
+					title = card(tip),
 					command = REFRESH,
 				}
 			end,
@@ -670,7 +702,11 @@ local function specs(): { Spec }
 				return {
 					text = "🔥 " .. compact(t.tokens),
 					series = t.tokens_series,
-					title = string.format(config.labels.tip_today, compact(t.tokens), t.requests),
+					title = card({
+						{ config.labels.dash_today, compact(t.tokens) .. " " .. config.labels.tokens },
+						{ config.labels.k_since_monday, compact(t.since_monday) .. " " .. config.labels.tokens },
+						{ config.labels.k_requests, tostring(t.requests) },
+					}),
 					command = DASHBOARD,
 				}
 			end,
@@ -688,7 +724,12 @@ local function specs(): { Spec }
 				return {
 					text = "💸 " .. money(t.cost),
 					series = t.cost_series,
-					title = string.format(config.labels.tip_cost, money(t.cost), money(t.week), money(t.month)),
+					title = card({
+						{ config.labels.dash_today, money(t.cost) },
+						{ config.labels.dash_week, money(t.week) },
+						{ config.labels.dash_month, money(t.month) },
+						config.labels.dash_cost,
+					}),
 					command = DASHBOARD,
 				}
 			end,
@@ -707,7 +748,13 @@ local function specs(): { Spec }
 				return {
 					text = string.format("⚡ %d tok/s · ♻ %d%%", tps, pct(s.cache)),
 					value = s.cache,
-					title = string.format(config.labels.tip_speed, tps, s.ttft, pct(s.cache), pct(s.savings), os.date("%d/%m %H:%M", s.since)),
+					title = card({
+						{ config.labels.k_speed, tps .. " tok/s" },
+						{ config.labels.k_first_token, string.format("%.1f s", s.ttft) },
+						{ config.labels.k_cache, pct(s.cache) .. "%" },
+						{ config.labels.k_saved, pct(s.savings) .. "%" },
+						{ config.labels.k_since, os.date("%d/%m %H:%M", s.since) :: string },
+					}),
 					command = DASHBOARD,
 				}
 			end,
@@ -719,25 +766,33 @@ local function specs(): { Spec }
 			styles = { "text" },
 			render = function()
 				local L2 = config.labels
-				local problems, short = {}, nil
+				local rows, n, short = {}, 0, nil
 				for _, d in disabled do
 					local name = history.name(d.provider)
 					short = short or (name .. " " .. L2.off)
-					table.insert(problems, string.format(L2.login_off, name) .. (if d.cause ~= "" then ": " .. d.cause else ""))
+					n += 1
+					table.insert(rows, { name, L2.k_login })
+					if d.cause ~= "" then
+						-- One text line: omp's cause can carry the provider's JSON body over several lines, and a colon
+						-- would turn it into a key and a value.
+						table.insert(rows, (string.gsub(string.gsub(d.cause, "%s+", " "), ":%s", " · ")))
+					end
 				end
 				for _, pair in { { "Claude", failed.claude }, { "Codex", failed.codex } } do
 					if pair[2] then
 						short = short or "omp ?"
-						table.insert(problems, string.format(L2.tip_failed, pair[1]))
+						n += 1
+						table.insert(rows, { pair[1], L2.failed })
 					end
 				end
 				if not short then
 					return nil
 				end
+				table.insert(rows, L2.click_retry)
 				return {
-					text = "⚠ " .. short .. (if #problems > 1 then " +" .. (#problems - 1) else ""),
+					text = "⚠ " .. short .. (if n > 1 then " +" .. (n - 1) else ""),
 					tone = "error",
-					title = table.concat(problems, " · "),
+					title = card(rows),
 					command = REFRESH,
 				}
 			end,

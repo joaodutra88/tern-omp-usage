@@ -2,6 +2,13 @@
 
 Every version `plugin.toml` names has a section here. When that version reaches `main`, CI publishes the section as the GitHub release, and installed copies of the plugin show it.
 
+## 0.6.0
+
+- Hovering a widget opens a card instead of a line of text: Tern's own hover card, one row per detail, sized to fit in every language.
+- Limits: the card has the share used and the reset; Claude's, from 10 minutes into the window and at any share used, adds when the window runs out at the average pace so far, with the verdict: the reset comes first, or it runs out so long before it.
+- **Tokens today**: the card adds the tokens since Monday, from the days Tern was open, and today's requests.
+- **Problems**: a cause omp reports over several lines (a provider's JSON error) stays on one line of the card.
+
 ## 0.5.0
 
 **Coming from 0.4.x:** the usage leaves the **Plugin segments** widget and becomes widgets of its own, so after the update the bar is empty until you place them: palette › **Edit widgets…**. Needs Tern 0.9.17 or later.

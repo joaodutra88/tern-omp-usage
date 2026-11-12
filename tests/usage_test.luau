@@ -168,13 +168,16 @@ expect(v["claude-5h"].text == "5h ●●●●● 40%" and v["claude-5h"].icon =
 local r = rule("claude-5h")
 expect(has(r, "#22c55e") and has(r, "#a3e635") and not has(r, "#facc15") and has(r, "100.000%"), "the dots are painted", r)
 expect(has(sheets.dots, "omp-usage/claude-'] .wg-ico { color: #d97757"), "the Claude icon wears Claude's color", sheets.dots)
-expect(has(v["claude-5h"].title, "resets in 1h30m"), "the tooltip has the 5h reset", v["claude-5h"].title)
+expect(has(v["claude-5h"].title, "Used: 40%\nResets in: 1h30m\n"), "the card has the share used and the 5h reset", v["claude-5h"].title)
+-- 3h29m into the 5h window at 40%, the average pace lasts 5h14m more: the reset comes first.
+expect(has(v["claude-5h"].title, "At this pace, out in: 5h14m\nResets before it runs out"), "the pace shows under 50% too", v["claude-5h"].title)
 expect(v["claude-5h"].command == "plugin.omp-usage.refresh", "a limit refreshes on click", v["claude-5h"].command)
 expect(has(v.budget.text, "📅 left") and v.budget.tone == "ok", "budget should be 'left' at 0% weekly use", text)
 expect(v["claude-fable"] == nil, "Fable must stay hidden when the plan has no Fable window", text)
 expect(v.resets.text == "✦ 4" and v.resets.tone == "accent", "Claude's 1 and Codex's 2 + 1 saved resets", text)
 expect(v["codex-5h"].text == "5h ●●●●● 25%" and v["codex-5h"].icon == "provider-openai-codex", "Codex 5h should be usedAccounts/accounts = 25%", text)
-expect(has(v["codex-5h"].title, "2 accounts"), "Codex account count in the tooltip", v["codex-5h"].title)
+expect(has(v["codex-5h"].title, "Accounts: 2"), "Codex account count in the card", v["codex-5h"].title)
+expect(has(v.cost.title, "Today: $12\nLast 7 days: $"), "the cost card has a row per period", v.cost.title)
 expect(v.today.text == "🔥 2M" and v.cost.text == "💸 $12", "today's tokens and cost leave out yesterday's bucket", text)
 expect(#v.cost.series >= 42 and v.cost.series[#v.cost.series] == 1, "the cost graph spans its width and ends at the day's total", #v.cost.series)
 expect(v.speed.text == "⚡ 79 tok/s · ♻ 99%" and v.speed.value == 0.99, "speed and cache rate", v.speed and v.speed.text)
@@ -262,7 +265,7 @@ settle("part", "alerts")
 -- Forecast: at 90% with the reset 90 min away (3.5 h into the 5h window), the average pace runs out in 23 min.
 v = render(claude(0.9, 0, now_ms + 7 * DAY))
 expect(v.forecast and v.forecast.text == "⏳ 5h 23m", "the 5h window shows when it runs out", v.forecast and v.forecast.text)
-expect(has(v["claude-5h"].title, "runs out in 23m"), "and so does its tooltip", v["claude-5h"].title)
+expect(has(v["claude-5h"].title, "At this pace, out in: 23m\nRuns out 1h07m before the reset"), "and its card says how long before the reset", v["claude-5h"].title)
 v = render(claude(0.4, 0, now_ms + 7 * DAY))
 expect(v.forecast == nil, "under 50% there is no forecast")
 -- Half the week gone in two days runs out in two more, before the reset five days away.
@@ -285,7 +288,7 @@ local later = os.time() + 20 * 86400
 toasts = {}
 v = render(claude(0.1, 0, now_ms + 7 * DAY, nil, { availableCount = 2, redeemableCount = 0, credits = { credit("c1", false, later), credit("c2", false, later) } }), no_codex)
 expect(v.resets.text == "✦ 0/2" and v.resets.tone == "muted", "saved but none usable yet", v.resets.text)
-expect(has(v.resets.title, "clears 5h, wk") and has(v.resets.title, "usable later"), "the tooltip lists each reset", v.resets.title)
+expect(has(v.resets.title, "Claude 5h, wk: later · ") and not has(v.resets.title, "now ·"), "the card lists each reset", v.resets.title)
 expect(#toasts == 0, "fewer usable resets say nothing", toasts[1] and toasts[1][2])
 local soon = credit("c1", true, os.time() + 86400)
 render(claude(0.1, 0, now_ms + 7 * DAY, nil, { availableCount = 2, redeemableCount = 1, credits = { soon, credit("c2", false, later) } }), no_codex)
@@ -297,14 +300,16 @@ expect(#toasts == 2, "each alert shows once", #toasts)
 v = render(claude(0.1, 0, now_ms + 7 * DAY, nil, { availableCount = 3 }), no_codex)
 expect(v.resets.text == "✦ 3", "no redeemableCount means all usable", v.resets.text)
 
--- A login omp turns off: Problems shows it without the account's e-mail, and it toasts once.
+-- A login omp turns off: Problems shows it without the account's e-mail, and it toasts once. The cause carries the
+-- provider's JSON body over several lines, as omp reports it; the card keeps it on one text line.
 toasts = {}
 local off = { reports = {}, capacity = {}, disabledCredentials = {
-	{ provider = "openai-codex", cause = "oauth refresh failed for user@example.com: 401", email = "user@example.com" },
+	{ provider = "openai-codex", cause = 'oauth refresh failed for user@example.com: 401 {\n  "error": {\n    "message": "expired"', email = "user@example.com" },
 } }
 v = render(claude(0.1, 0, now_ms + 7 * DAY), off)
 expect(v.health and v.health.text == "⚠ Codex off" and v.health.tone == "error", "Problems names the login", v.health and v.health.text)
 expect(has(v.health.title, "401") and not has(v.health.title, "@"), "the cause stays, the e-mail goes", v.health.title)
+expect(v.health.title == 'Codex: login off\noauth refresh failed for … · 401 { "error" · { "message" · "expired"\nClick to retry', "the cause is one text line", v.health.title)
 expect(#toasts == 1 and toasts[1][2] == "omp turned off the Codex login" and not has(toasts[1][3], "@"), "one toast for it", toasts[1] and toasts[1][2])
 render(claude(0.1, 0, now_ms + 7 * DAY), off)
 expect(#toasts == 1, "the same login doesn't toast again", #toasts)
@@ -315,5 +320,59 @@ store.days = { ["2000-01-01"] = { tokens = 1, cost = 1 } }
 render(claude(0.1, 0, now_ms + 7 * DAY))
 expect(store.days[today_key] and store.days[today_key].cost == 12.4, "today's cost is stored for the dashboard")
 expect(store.days["2000-01-01"] == nil, "days older than 62 are dropped")
+
+-- The tokens card adds the week since Monday from the days kept: a Monday entry counts (unless Monday is today,
+-- whose entry the fetch just wrote), last Sunday's doesn't.
+local since = ((os.date("*t") :: any).wday + 5) % 7
+local monday = os.date("%Y-%m-%d", os.time() - since * 86400) :: string
+local sunday = os.date("%Y-%m-%d", os.time() - (since + 1) * 86400) :: string
+store.days = { [monday] = { tokens = 2500000, cost = 1 }, [sunday] = { tokens = 100000000, cost = 1 } }
+v = render(claude(0.1, 0, now_ms + 7 * DAY))
+local week = if since == 0 then "2M" else "4M"
+expect(v.today.title == "Today: 2M tokens\nSince Monday: " .. week .. " tokens\nRequests today: 120", "today, the week since Monday and today's requests", v.today.title)
+
+-- Every card fits Tern's, 296 px wide with 12 px of padding a side, in every language. Estimated widths: 6.6 px a
+-- character in the 12 px sans of keys and text lines, 6.9 px in the 11.5 px mono of values, twice that for CJK,
+-- 8 px between key and value. This measures the labels: omp's cause is free text, so Tern cuts it with an
+-- ellipsis, and here it is short.
+local function width(s: string, per: number): number
+	local w = 0
+	for _, c in utf8.codes(s) do
+		w += if c >= 0x2E80 then 2 * per else per
+	end
+	return w
+end
+local function overflow(title: string?): string?
+	for line in string.gmatch(title or "", "[^\n]+") do
+		local k, val = string.match(line, "^(.-): (.*)$")
+		if (if k then width(k, 6.6) + 8 + width(val, 6.9) else width(line, 6.6)) > 272 then
+			return line
+		end
+	end
+	return nil
+end
+local brief_off = { reports = {}, capacity = {}, disabledCredentials = {
+	{ provider = "openai-codex", cause = "oauth refresh failed: 401" },
+} }
+local busy_week = claude(0.9, 0.5, now_ms + 5 * DAY, {
+	{ id = "anthropic:7d:fable", amount = { usedFraction = 0.6 }, window = { resetsAt = now_ms + 5 * DAY } },
+}, { availableCount = 2, redeemableCount = 1, credits = { credit("c3", true, later), credit("c4", false, later) } })
+for _, language in config.LANGUAGES do
+	settle("language", language)
+	for _, round in { { claude(0.4, 0.45, now_ms + 5 * DAY) }, { busy_week }, { claude(0.5, 1, now_ms + 7 * DAY), brief_off } } do
+		v = render(round[1], round[2])
+		for id, view in v do
+			local line = overflow(view.title)
+			expect(line == nil, language .. ": the " .. id .. " card fits", line)
+		end
+	end
+	-- omp failing on both: Problems lists each with the retry hint.
+	spawn_fails = true
+	usage.fetch(true)
+	spawn_fails = false
+	local line = overflow(widgets.health.render(nil).title)
+	expect(line == nil, language .. ": the failed fetch's card fits", line)
+end
+settle("language", "en")
 
 print("usage_test: ok")
