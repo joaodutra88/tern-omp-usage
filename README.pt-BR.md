@@ -135,7 +135,7 @@ Abra a paleta de comandos e digite `OMP usage`. As configurações ficam na past
 | **OMP usage: dashboard** | Abre o painel, ou foca nele quando esta janela já tem um. |
 | **OMP usage: what's new** | Abre as notas da versão que você está rodando. |
 
-Se o daemon do Tern não encontrar o `omp`, defina a variável de ambiente `OMP_USAGE_BIN` com o caminho completo. As cores são CSS simples no final de `window.luau`. Cada segmento é `#statusline .sl-plugin[title="plugin.omp-usage.<name>"]`.
+Se o daemon do Tern não encontrar o `omp`, defina a variável de ambiente `OMP_USAGE_BIN` com o caminho completo. As cores são CSS simples no final de `window.luau`. Cada segmento é `#widgetbar .wg-seg[title="plugin.omp-usage.<name>"]`.
 
 ### No seu idioma
 
@@ -161,7 +161,7 @@ O Tern desativa um plugin que dá erro ou cujo formatador da barra estoura o tem
 A última chamada de `omp usage` falhou. Confira se `omp usage --json -p anthropic` (ou `-p openai-codex`) funciona em um terminal e, se não funcionar, faça login no omp. Clique em qualquer segmento para tentar de novo.
 
 **Não aparece nada.**
-Confirme que a barra de status está ligada (`"status_bar": true` nas configurações do Tern). Se estiver, o daemon do Tern pode não encontrar o `omp`: defina `OMP_USAGE_BIN` com o caminho completo e reinicie o Tern.
+Confirme que a barra de widgets mostra o widget **Plugin segments** (paleta › **Edit widgets…**). Se mostrar, o daemon do Tern pode não encontrar o `omp`: defina `OMP_USAGE_BIN` com o caminho completo e reinicie o Tern.
 
 **Os números ficam atrás do claude.ai.**
 Eles vêm do mesmo endpoint de uso, pelo omp, a cada 5 minutos, porque a Anthropic limita a frequência de consultas. Clique em um segmento para forçar uma leitura nova.
