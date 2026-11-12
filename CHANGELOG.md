@@ -2,6 +2,11 @@
 
 Every version `plugin.toml` names has a section here. When that version reaches `main`, CI publishes the section as the GitHub release, and installed copies of the plugin show it.
 
+## 0.4.4
+
+- Tern 0.9.17 turned the status line into the widget bar and every plugin segment into a chip (a grey dot, a pill, smaller text) that ignored the plugin's colors and spacing. The stylesheet now targets the widget bar, so the bar looks as before, inside the **Plugin segments** widget (palette › **Edit widgets…**). Needs Tern 0.9.17 or later.
+- `extras.luau`: style a segment with `#widgetbar .wg-seg[title="plugin.omp-usage.<name>"]`; `#statusline` no longer matches anything.
+
 ## 0.4.3
 
 - German (`de`) and French (`fr`) in **OMP usage: language…**.

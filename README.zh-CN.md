@@ -135,7 +135,7 @@ Install the Tern plugin https://github.com/joaodutra88/tern-omp-usage for me.
 | **OMP usage: dashboard** | 打开仪表盘；如果当前窗口已有仪表盘，则切换到它。 |
 | **OMP usage: what's new** | 打开你正在运行的版本的发布说明。 |
 
-如果 Tern 的守护进程找不到 `omp`，请将 `OMP_USAGE_BIN` 环境变量设置为其完整路径。颜色是 `window.luau` 底部的普通 CSS。每个片段对应 `#statusline .sl-plugin[title="plugin.omp-usage.<name>"]`。
+如果 Tern 的守护进程找不到 `omp`，请将 `OMP_USAGE_BIN` 环境变量设置为其完整路径。颜色是 `window.luau` 底部的普通 CSS。每个片段对应 `#widgetbar .wg-seg[title="plugin.omp-usage.<name>"]`。
 
 ### 使用你的语言
 
@@ -161,7 +161,7 @@ Tern 会禁用出错的插件，或状态格式化器超出时间预算的插件
 上一次 `omp usage` 调用失败了。请在终端中检查 `omp usage --json -p anthropic`（或 `-p openai-codex`）是否能正常运行；如果不能，请先用 omp 登录。点击任意片段即可重试。
 
 **完全没有显示任何内容。**
-请确认状态栏已开启（Tern 设置中的 `"status_bar": true`）。如果已开启，Tern 的守护进程可能找不到 `omp`：请将 `OMP_USAGE_BIN` 设置为其完整路径，然后重启 Tern。
+请确认小组件栏中有 **Plugin segments** 小组件（命令面板 › **Edit widgets…**）。如果有，Tern 的守护进程可能找不到 `omp`：请将 `OMP_USAGE_BIN` 设置为其完整路径，然后重启 Tern。
 
 **数字比 claude.ai 慢。**
 它们来自同一个用量接口，通过 omp 每 5 分钟读取一次，因为 Anthropic 会对更频繁的轮询进行限速。点击某个片段即可强制刷新。

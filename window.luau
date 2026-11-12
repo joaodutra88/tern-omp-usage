@@ -88,44 +88,48 @@ tern.timer(TICK_MS, function()
 end)
 
 tern.css("statusline", [[
-/* Tern spaces plugin segments with a flex gap; zero it and let each segment set its own margin.
-   Descendant, not child: since Tern 0.9.16 .sl-plugins sits inside a .sb-grp. */
-#statusline .sl-plugins { gap: 0 !important; }
-#statusline .sl-plugins > .sl-plugin { margin-left: 6px; }
-#statusline .sl-plugin[title^="plugin.omp-usage."] { margin: 0 0 0 6px; padding: 0; }
-#statusline .sl-plugin[title="plugin.omp-usage.claude"] { margin-left: 16px; padding-left: 12px;
+/* Since Tern 0.9.17 segments are .wg-seg chips in the widget bar's "Plugin segments" widget. Zero its gap and let
+   each segment set its own margin (a bare .wg-seg rule, so the title rules below win); strip the chip's dot, pill
+   and 11px text so their colors show. */
+#widgetbar .wg[data-widget='status'] { gap: 0 !important; }
+#widgetbar .wg-seg { margin-left: 6px; }
+#widgetbar .wg-seg[title^="plugin.omp-usage."] { margin: 0 0 0 6px; padding: 0; height: auto; border-radius: 0;
+  font-size: inherit; background: none; box-shadow: none; }
+#widgetbar .wg-seg[title^="plugin.omp-usage."] .wg-status-dot { display: none; }
+#widgetbar .wg-seg[title^="plugin.omp-usage."] .wg-status-text { max-width: none; }
+#widgetbar .wg-seg[title="plugin.omp-usage.claude"] { margin-left: 16px; padding-left: 12px;
   border-left: 1px solid rgb(255 255 255 / 10%); color: #d97757; font-weight: 600; }
-#statusline .sl-plugin[title="plugin.omp-usage.codex"] { margin-left: 16px; padding-left: 12px;
+#widgetbar .wg-seg[title="plugin.omp-usage.codex"] { margin-left: 16px; padding-left: 12px;
   border-left: 1px solid rgb(255 255 255 / 10%); color: #3b82f6; font-weight: 700; }
-#statusline .sl-plugin[title="plugin.omp-usage.today"] { margin-left: 16px; padding-left: 12px;
+#widgetbar .wg-seg[title="plugin.omp-usage.today"] { margin-left: 16px; padding-left: 12px;
   border-left: 1px solid rgb(255 255 255 / 10%); color: #fb923c; font-weight: 600; }
-#statusline .sl-plugin[title="plugin.omp-usage.cost"] { margin-left: 8px; padding: 0 6px; border-radius: 4px;
+#widgetbar .wg-seg[title="plugin.omp-usage.cost"] { margin-left: 8px; padding: 0 6px; border-radius: 4px;
   color: #4ade80; background: rgb(74 222 128 / 12%); font-weight: 700; }
-#statusline .sl-plugin[title="plugin.omp-usage.credits"] { color: #c084fc; }
-#statusline .sl-plugin[title="plugin.omp-usage.slack-ok"] { margin-left: 10px; padding: 0 6px; border-radius: 4px;
+#widgetbar .wg-seg[title="plugin.omp-usage.credits"] { color: #c084fc; }
+#widgetbar .wg-seg[title="plugin.omp-usage.slack-ok"] { margin-left: 10px; padding: 0 6px; border-radius: 4px;
   color: #4ade80; background: rgb(74 222 128 / 12%); font-weight: 700; }
-#statusline .sl-plugin[title="plugin.omp-usage.slack-bad"] { margin-left: 10px; padding: 0 6px; border-radius: 4px;
+#widgetbar .wg-seg[title="plugin.omp-usage.slack-bad"] { margin-left: 10px; padding: 0 6px; border-radius: 4px;
   color: #f87171; background: rgb(239 68 68 / 18%); font-weight: 700; animation: omppulse 1.2s ease-in-out infinite; }
-#statusline .sl-plugin[title="plugin.omp-usage.reset"] { color: rgb(255 255 255 / 45%); }
-#statusline .sl-plugin[title="plugin.omp-usage.reset-soon"] { color: #4ade80; font-weight: 600; }
-#statusline .sl-plugin[title="plugin.omp-usage.eta"] { margin-left: 4px; color: #fb923c; font-weight: 600; }
-#statusline .sl-plugin[title="plugin.omp-usage.locked"] { margin-left: 16px; color: #fff; background: #b91c1c;
+#widgetbar .wg-seg[title="plugin.omp-usage.reset"] { color: rgb(255 255 255 / 45%); }
+#widgetbar .wg-seg[title="plugin.omp-usage.reset-soon"] { color: #4ade80; font-weight: 600; }
+#widgetbar .wg-seg[title="plugin.omp-usage.eta"] { margin-left: 4px; color: #fb923c; font-weight: 600; }
+#widgetbar .wg-seg[title="plugin.omp-usage.locked"] { margin-left: 16px; color: #fff; background: #b91c1c;
   padding: 0 6px; border-radius: 4px; font-weight: 700; animation: omppulse 0.9s ease-in-out infinite; }
-#statusline .sl-plugin[title^="plugin.omp-usage.dot-"] { margin-left: 0; }
-#statusline .sl-plugin[title="plugin.omp-usage.dot-1"] { margin-left: 6px; color: #22c55e; }
-#statusline .sl-plugin[title="plugin.omp-usage.dot-2"] { color: #a3e635; }
-#statusline .sl-plugin[title="plugin.omp-usage.dot-3"] { color: #facc15; }
-#statusline .sl-plugin[title="plugin.omp-usage.dot-4"] { color: #f97316; }
-#statusline .sl-plugin[title="plugin.omp-usage.dot-5"] { color: #ef4444; }
-#statusline .sl-plugin[title="plugin.omp-usage.empty"] { color: rgb(255 255 255 / 14%); }
-#statusline .sl-plugin[title^="plugin.omp-usage.dot-"] + .sl-plugin[title="plugin.omp-usage.empty"] { margin-left: 0; }
-#statusline .sl-plugin[title="plugin.omp-usage.pct-1"] { color: #22c55e; }
-#statusline .sl-plugin[title="plugin.omp-usage.pct-2"] { color: #a3e635; }
-#statusline .sl-plugin[title="plugin.omp-usage.pct-3"] { color: #facc15; }
-#statusline .sl-plugin[title="plugin.omp-usage.pct-4"] { color: #f97316; font-weight: 600; }
-#statusline .sl-plugin[title="plugin.omp-usage.pct-crit"] { color: #fff; font-weight: 700; background: #dc2626;
+#widgetbar .wg-seg[title^="plugin.omp-usage.dot-"] { margin-left: 0; }
+#widgetbar .wg-seg[title="plugin.omp-usage.dot-1"] { margin-left: 6px; color: #22c55e; }
+#widgetbar .wg-seg[title="plugin.omp-usage.dot-2"] { color: #a3e635; }
+#widgetbar .wg-seg[title="plugin.omp-usage.dot-3"] { color: #facc15; }
+#widgetbar .wg-seg[title="plugin.omp-usage.dot-4"] { color: #f97316; }
+#widgetbar .wg-seg[title="plugin.omp-usage.dot-5"] { color: #ef4444; }
+#widgetbar .wg-seg[title="plugin.omp-usage.empty"] { color: rgb(255 255 255 / 14%); }
+#widgetbar .wg-seg[title^="plugin.omp-usage.dot-"] + .wg-seg[title="plugin.omp-usage.empty"] { margin-left: 0; }
+#widgetbar .wg-seg[title="plugin.omp-usage.pct-1"] { color: #22c55e; }
+#widgetbar .wg-seg[title="plugin.omp-usage.pct-2"] { color: #a3e635; }
+#widgetbar .wg-seg[title="plugin.omp-usage.pct-3"] { color: #facc15; }
+#widgetbar .wg-seg[title="plugin.omp-usage.pct-4"] { color: #f97316; font-weight: 600; }
+#widgetbar .wg-seg[title="plugin.omp-usage.pct-crit"] { color: #fff; font-weight: 700; background: #dc2626;
   padding: 0 4px; border-radius: 3px; animation: omppulse 1.2s ease-in-out infinite; }
-#statusline .sl-plugin[title="plugin.omp-usage.update"] { margin-left: 10px; padding: 0 6px; border-radius: 4px;
+#widgetbar .wg-seg[title="plugin.omp-usage.update"] { margin-left: 10px; padding: 0 6px; border-radius: 4px;
   color: #fff; background: #2563eb; font-weight: 700; }
 @keyframes omppulse { 50% { opacity: 0.35; } }
 ]])

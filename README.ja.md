@@ -135,7 +135,7 @@ Install the Tern plugin https://github.com/joaodutra88/tern-omp-usage for me.
 | **OMP usage: dashboard** | ダッシュボードを開きます。このウィンドウにすでにある場合はそこにフォーカスします。 |
 | **OMP usage: what's new** | 実行中のバージョンのリリースノートを開きます。 |
 
-Tern のデーモンが `omp` を見つけられない場合は、環境変数 `OMP_USAGE_BIN` にフルパスを設定してください。色は `window.luau` の末尾にある通常の CSS で設定します。各セグメントは `#statusline .sl-plugin[title="plugin.omp-usage.<name>"]` です。
+Tern のデーモンが `omp` を見つけられない場合は、環境変数 `OMP_USAGE_BIN` にフルパスを設定してください。色は `window.luau` の末尾にある通常の CSS で設定します。各セグメントは `#widgetbar .wg-seg[title="plugin.omp-usage.<name>"]` です。
 
 ### 言語を変更する
 
@@ -161,7 +161,7 @@ Tern は、エラーを起こした、またはステータスフォーマッタ
 直前の `omp usage` 呼び出しが失敗しています。ターミナルで `omp usage --json -p anthropic`(または `-p openai-codex`)が動作するか確認し、動作しなければ omp でサインインしてください。どのセグメントをクリックしても再試行されます。
 
 **何も表示されない。**
-ステータスラインがオンになっているか確認してください(Tern の設定で `"status_bar": true`)。オンなのに表示されない場合、Tern のデーモンが `omp` を見つけられていない可能性があります。`OMP_USAGE_BIN` にフルパスを設定し、Tern を再起動してください。
+ウィジェットバーに **Plugin segments** ウィジェットがあるか確認してください(パレット › **Edit widgets…**)。あるのに表示されない場合、Tern のデーモンが `omp` を見つけられていない可能性があります。`OMP_USAGE_BIN` にフルパスを設定し、Tern を再起動してください。
 
 **数値が claude.ai より遅れている。**
 同じ使用量エンドポイントから omp 経由で、5 分ごとに取得しているためです。Anthropic は頻繁なポーリングにレート制限をかけるため、この間隔にしています。セグメントをクリックすると、最新の値を強制的に読み取ります。

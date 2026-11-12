@@ -23,7 +23,7 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 - **The status formatter has 4 ms.** Tern disables a plugin that goes over. Never run a process, read a file or walk directories inside `tern.chrome.status`; do it in `tern.timer` or a `tern.process.run` callback and cache the result.
 - **Timers and callbacks have 50 ms.** Over that, Tern turns off every timer of the plugin until a reload, and the bar freezes. Start one process or request per callback at most; start the next one from its callback, or from another timer. The integration harness fails a change that breaks this.
 - **Run installs outside the plugin folder.** `tern.process.run` starts in the plugin's folder by default, and on Windows `tern plugin install --force` can't replace a folder a process is running in: pass `cwd = tern.plugin.data`.
-- **Tern's CSS is a subset.** `text-shadow`, `margin-block` and friends are rejected (the check catches them). Style a segment by its title: `#statusline .sl-plugin[title="plugin.omp-usage.<command>"]`, which is why every segment carries a `command` even when it only refreshes.
+- **Tern's CSS is a subset.** `text-shadow`, `margin-block` and friends are rejected (the check catches them). Style a segment by its title: `#widgetbar .wg-seg[title="plugin.omp-usage.<command>"]`, which is why every segment carries a `command` even when it only refreshes.
 - **UTF-8.** Strings sent to Tern must stay valid UTF-8. Cut text by characters (`utf8.offset`), never by bytes.
 - **Anthropic rate-limits** its usage endpoint below about 5 minutes. Don't poll faster than `FETCH_MS`.
 - **Text the user sees** lives in `labels.luau`. Add a key to `en` (and the other languages you can) instead of hard-coding words elsewhere.

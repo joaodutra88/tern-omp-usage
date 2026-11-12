@@ -133,7 +133,7 @@ Open the command palette and type `OMP usage`. Settings are kept in the plugin's
 | **OMP usage: dashboard** | Opens the dashboard, or focuses it when this window already has one. |
 | **OMP usage: what's new** | Opens the release notes of the version you run. |
 
-If Tern's daemon can't find `omp`, set the `OMP_USAGE_BIN` environment variable to its full path. Colors are plain CSS at the bottom of `window.luau`. Each segment is `#statusline .sl-plugin[title="plugin.omp-usage.<name>"]`.
+If Tern's daemon can't find `omp`, set the `OMP_USAGE_BIN` environment variable to its full path. Colors are plain CSS at the bottom of `window.luau`. Each segment is `#widgetbar .wg-seg[title="plugin.omp-usage.<name>"]`.
 
 ### In your language
 
@@ -159,7 +159,7 @@ Tern disables a plugin that errors or whose status formatter runs over its time 
 The last `omp usage` call failed. Check that `omp usage --json -p anthropic` (or `-p openai-codex`) works in a terminal, and sign in with omp if it doesn't. Click any segment to retry.
 
 **Nothing shows up at all.**
-Make sure the status line is on (`"status_bar": true` in Tern's settings). If it is, Tern's daemon may not find `omp`: set `OMP_USAGE_BIN` to its full path and restart Tern.
+Make sure the widget bar shows the **Plugin segments** widget (palette › **Edit widgets…**). If it does, Tern's daemon may not find `omp`: set `OMP_USAGE_BIN` to its full path and restart Tern.
 
 **The numbers lag behind claude.ai.**
 They come from the same usage endpoint through omp, every 5 minutes, because Anthropic rate-limits faster polling. Click a segment to force a fresh read.
