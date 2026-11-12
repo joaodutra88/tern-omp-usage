@@ -2,6 +2,19 @@
 
 Every version `plugin.toml` names has a section here. When that version reaches `main`, CI publishes the section as the GitHub release, and installed copies of the plugin show it.
 
+## 0.5.0
+
+**Coming from 0.4.x:** the usage leaves the **Plugin segments** widget and becomes widgets of its own, so after the update the bar is empty until you place them: palette › **Edit widgets…**. Needs Tern 0.9.17 or later.
+
+- Widgets: Claude 5h, wk and Fable and Codex 5h and wk (five colored dots beside the provider's icon, like the old status line), work-week budget (text or bar), runs out, saved resets, tokens and cost today (text, or a graph of the running total), speed and cache, problems and plugin update. Pick, order and style them in Tern's widget editor; hover one for its details.
+- Saved resets show usable now / saved, from omp's `redeemableCount`. A toast when one becomes usable, and when a usable one expires within 2 days; the tooltip lists what each one clears and when it expires.
+- **Problems**: shows up, with a toast, when omp turns a login off (a failed OAuth refresh, say) or an `omp usage` call fails. The cause shows without the account's e-mail.
+- **Speed and cache**: average tok/s and cache hit rate from `omp stats`.
+- The dashboard shows every provider omp tracks (Gemini, xAI, OpenCode Go…), not only Claude and Codex, and the cost by model. A quota omp reports twice (Antigravity's shared Claude & GPT) shows once.
+- Fix: "today" (tokens, cost and the day kept for the dashboard) started at midnight UTC instead of local midnight: at 21:00 the evening before in Brazil.
+- **OMP usage: show or hide a part…** keeps `alerts` and `updates`; what the bar shows is the widgets you place.
+- `extras.luau` can register widgets with `tern.chrome.widget`; `M.segments` is optional and still fills **Plugin segments**.
+
 ## 0.4.4
 
 - Tern 0.9.17 turned the status line into the widget bar and every plugin segment into a chip (a grey dot, a pill, smaller text) that ignored the plugin's colors and spacing. The stylesheet now targets the widget bar, so the bar looks as before, inside the **Plugin segments** widget (palette › **Edit widgets…**). Needs Tern 0.9.17 or later.
