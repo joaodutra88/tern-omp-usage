@@ -30,18 +30,18 @@ Everything stays in the widget bar, so the answers are on screen while you work:
 
 ## The widgets
 
-Place them with palette › **Edit widgets…**, in any order. Each one is text; in the same editor the budget can turn into a bar and today's tokens and cost into a graph. Colors follow your Tern theme. Hover a widget for the details; a click refreshes the limits, or opens the dashboard from the budget, tokens, cost and speed. A widget with nothing to say hides itself.
+Place them with palette › **Edit widgets…**, in any order. Each one is text; in the same editor the budget can turn into a bar and today's tokens and cost into a graph. Colors follow your Tern theme. Hover a widget for its card: Tern's own hover card, one row per detail, sized to fit in every language. A click refreshes the limits, or opens the dashboard from the budget, tokens, cost and speed. A widget with nothing to say hides itself.
 
 | Widget | Looks like | Meaning |
 |---|---|---|
-| **Claude 5h**, **Claude wk**, **Claude Fable** | `5h ●●○○○ 40%` | Share of the window used, beside the provider's icon: five dots fill from green to red, and the percentage takes the color of the last dot reached, red from the red-badge threshold (80% unless you change it). `↑` when it rose 3 points or more since the last reading, 5 minutes earlier. At 100% it reads `LOCKED` with the time until it frees up. The tooltip has the reset and, for 5h and wk from 50% used, when the window runs out at the current pace. Fable shows only when your plan has it. |
-| **Codex 5h**, **Codex wk** | `5h ●●○○○ 25%` | Share of your linked Codex accounts used up, in the same dots; the tooltip counts the accounts. Hidden when omp has no Codex account. |
+| **Claude 5h**, **Claude wk**, **Claude Fable** | `5h ●●○○○ 40%` | Share of the window used, beside the provider's icon: five dots fill from green to red, and the percentage takes the color of the last dot reached, red from the red-badge threshold (80% unless you change it). `↑` when it rose 3 points or more since the last reading, 5 minutes earlier. At 100% it reads `LOCKED` with the time until it frees up. The card has the share used, the reset and, from 10 minutes into the window, when it runs out at the average pace so far, with the verdict: the reset comes first, or it runs out so long before it. Fable shows only when your plan has it. |
+| **Codex 5h**, **Codex wk** | `5h ●●○○○ 25%` | Share of your linked Codex accounts used up, in the same dots; the card counts the accounts. Hidden when omp has no Codex account. |
 | **Work-week budget** | `📅 left 21%` | Each work day (Monday to Friday unless you change it) of the current 7-day window unlocks an equal share of the weekly quota, 20% with five days. `left` is quota unlocked and not spent yet; `over`, in red, means you are spending ahead of the week. |
 | **Runs out** | `⏳ wk 2d16h` | At the average pace since a Claude window opened, it runs out in this long, before its reset. Shows from 50% used. |
-| **Saved resets** | `✦ 1/3` | Saved usage-limit resets, usable now / saved (one number when all of them are usable). The tooltip lists what each one clears and when it expires. |
-| **Tokens today**, **Cost today** | `🔥 56M`, `💸 $30` | Tokens and API-price cost since local midnight, all providers, from `omp stats`; the graph is the running total. Cache reads count as tokens, so most of this number is cache. |
-| **Speed and cache** | `⚡ 79 tok/s · ♻ 99%` | Average output speed and cache hit rate over omp's last day; the tooltip adds the time to the first token and the share of input cost the cache saved. |
-| **Problems** | `⚠ Codex off` | Only when an `omp usage` call failed or omp turned a login off; the tooltip has the cause, without the account's e-mail. |
+| **Saved resets** | `✦ 1/3` | Saved usage-limit resets, usable now / saved (one number when all of them are usable). The card lists what each one clears, whether it is usable now and when it expires. |
+| **Tokens today**, **Cost today** | `🔥 56M`, `💸 $30` | Tokens and API-price cost since local midnight, all providers, from `omp stats`; the graph is the running total. The tokens card adds the week since Monday (the days Tern was open, as kept for the dashboard) and today's requests; the cost card, the last 7 days and this month. Cache reads count as tokens, so most of this number is cache. |
+| **Speed and cache** | `⚡ 79 tok/s · ♻ 99%` | Average output speed and cache hit rate over omp's last day; the card adds the time to the first token and the share of input cost the cache saved. |
+| **Problems** | `⚠ Codex off` | Only when an `omp usage` call failed or omp turned a login off; the card has the cause, without the account's e-mail. |
 | **Plugin update** | `⬆ 0.6.0` | A newer release of this plugin; click it to install. |
 
 Alerts come as toasts: a window reaching the red-badge threshold, locking or freeing up again; a saved reset becoming usable, or expiring within 2 days; a login omp turns off.

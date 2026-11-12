@@ -170,7 +170,10 @@ function M.widget()
 		description = config.labels.w_update_desc,
 		render = function()
 			if latest and M.available() then
-				return { text = "⬆ " .. latest.version, tone = "accent", title = config.labels.update_how, command = P .. "update" }
+				local L = config.labels
+				-- Each `Key: value` line is a row of Tern's hover card (see `card` in usage.luau).
+				local title = string.format("%s: %s\n%s: %s\n%s", L.k_new_version, latest.version, L.k_installed, M.VERSION, L.update_click)
+				return { text = "⬆ " .. latest.version, tone = "accent", title = title, command = P .. "update" }
 			end
 			return nil
 		end,

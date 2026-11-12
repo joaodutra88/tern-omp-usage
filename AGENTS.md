@@ -28,6 +28,7 @@ You are helping someone use, change or report a problem with **tern-omp-usage**,
 - **UTF-8.** Strings sent to Tern must stay valid UTF-8. Cut text by characters (`utf8.offset`), never by bytes.
 - **Anthropic rate-limits** its usage endpoint below about 5 minutes. Don't poll faster than `FETCH_MS`.
 - **Text the user sees** lives in `labels.luau`. Add a key to `en` (and the other languages you can) instead of hard-coding words elsewhere.
+- **A widget's `title` is a hover card.** Tern draws each `Key: value` line as a row and any other line as text cut with an ellipsis, in a card about 270 px wide inside. Build it with `card` in `usage.luau`, keep keys and values short, and never put `: ` in a text line (it turns into a row). `tests/usage_test.luau` measures every card in every language.
 - **Settings are read outside the render.** `config.load()` reads `tern.kv` at load and on the minute tick; a render only reads the cached table.
 - **No credentials, one request.** The plugin runs `omp`, plus a daily unauthenticated GET of this repository's latest GitHub release (off with the `updates` part or `OMP_USAGE_NO_UPDATE_CHECK`). Don't add more network calls; anything that needs a token belongs in `omp`, not here.
 - **Write only to `tern.plugin.data`.** An install replaces the package folder, and a write inside it reloads the plugin.
