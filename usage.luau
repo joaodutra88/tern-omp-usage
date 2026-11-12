@@ -448,7 +448,8 @@ end
 type View = { text: string, tone: string?, title: string?, command: string?, icon: string?, value: number?, series: { number }? }
 
 -- The limit widgets look like the old status line: five dots, dot N in step N from green to red once reached, and
--- the percentage in the step it reached, red from the red-badge threshold on; the provider's icon in its color.
+-- the percentage in the step it reached, red from the red-badge threshold on; the provider's icon in its color, on
+-- the 5h widget only, so wk and Fable placed beside it don't repeat it.
 local DOTS = 5
 local STEP = { "#22c55e", "#a3e635", "#facc15", "#f97316", "#ef4444" }
 local DIM, LABEL, RED = "color-mix(in srgb, var(--t1) 16%, transparent)", "var(--t3)", "#ef4444"
@@ -507,10 +508,11 @@ end
 local function limit_view(l: { [string]: any }): (View?, string?)
 	local L = config.labels
 	local who = PROVIDER[l.provider]
+	local icon = if l.window == "5h" then who.icon else nil
 	local p = if l.provider == "claude" then claude else codex
 	if not p then
 		if failed[l.provider] and l.field ~= "fable" then
-			return { text = l.window .. " ?", tone = "error", icon = who.icon, title = card({ { who.name, L.failed }, L.click_retry }), command = REFRESH }, nil
+			return { text = l.window .. " ?", tone = "error", icon = icon, title = card({ { who.name, L.failed }, L.click_retry }), command = REFRESH }, nil
 		end
 		return nil, nil
 	end
@@ -536,7 +538,7 @@ local function limit_view(l: { [string]: any }): (View?, string?)
 	if l.provider == "codex" and p.n then
 		table.insert(rows, { L.k_accounts, tostring(p.n) })
 	end
-	local view: View = { text = "", icon = who.icon, title = card(rows), command = REFRESH }
+	local view: View = { text = "", icon = icon, title = card(rows), command = REFRESH }
 	if f >= 1 then
 		view.text = string.format("%s %s%s", l.window, L.locked, if mins then " " .. hm(mins) else "")
 		view.tone = "error"

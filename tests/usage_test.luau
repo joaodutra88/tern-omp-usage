@@ -164,6 +164,7 @@ spawn_fails = false
 -- The 7d window starting right now leaves at most one weekday unlocked (20%), so 0% used is never over budget.
 local v, text = render(claude(0.4, 0, now_ms + 7 * DAY))
 expect(v["claude-5h"].text == "5h ●●●●● 40%" and v["claude-5h"].icon == "provider-anthropic", "Claude 5h", text)
+expect(v["claude-week"].icon == nil and v["codex-week"].icon == nil, "only the 5h widget carries the provider's icon", v["claude-week"].icon)
 -- 40% reaches the second of five dots: dots 1–2 green and lime, 3–5 dim, the share in lime, stops up to the end.
 local r = rule("claude-5h")
 expect(has(r, "#22c55e") and has(r, "#a3e635") and not has(r, "#facc15") and has(r, "100.000%"), "the dots are painted", r)
@@ -196,7 +197,7 @@ v, text = render(claude(0.5, 1, now_ms + 7 * DAY, {
 expect(has(v.budget.text, "📅 over") and v.budget.tone == "error", "budget should be 'over' at 100% weekly use", text)
 expect(has(v["claude-week"].text, "wk LOCKED") and v["claude-week"].tone == "error", "the lock shows at 100%", text)
 expect(rule("claude-week") == "", "a locked window wears the error tone, not the dots", rule("claude-week"))
-expect(v["claude-fable"] and v["claude-fable"].text == "Fable ●●●●● 10%", "Fable shows when the plan has it", text)
+expect(v["claude-fable"] and v["claude-fable"].text == "Fable ●●●●● 10%" and v["claude-fable"].icon == nil, "Fable shows when the plan has it, without the icon", text)
 
 -- Signed in to Claude only: omp answers Codex with no reports, which hides its widgets rather than flagging an error.
 v, text = render(claude(0.4, 0, now_ms + 7 * DAY), { reports = {}, capacity = {} })
